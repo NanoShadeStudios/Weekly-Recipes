@@ -1,0 +1,537 @@
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(120deg, #e0e7ff 0%, #f7f7fa 100%);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+.container {
+  background: #fff;
+  margin: 40px auto;
+  padding: 0;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.09);
+  max-width: 1200px;
+  width: 95vw;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+}
+
+h1 {
+  text-align: center;
+  color: #4f8cff;
+  margin: 32px 0 16px 0;
+  font-size: 2.2rem;
+  letter-spacing: 1px;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 0;
+  min-height: 600px;
+}
+
+.sidebar {
+  background: #f0f4ff;
+  border-radius: 0 0 0 16px;
+  padding: 40px 18px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 600px;
+  box-shadow: 2px 0 12px rgba(79,140,255,0.04);
+}
+
+.tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.tab-btn {
+  background: #e0e7ff;
+  border: none;
+  padding: 12px 0;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  cursor: pointer;
+  color: #333;
+  transition: background 0.2s;
+  width: 100%;
+  margin-bottom: 2px;
+}
+
+.tab-btn.active {
+  background: #4f8cff;
+  color: #fff;
+}
+
+.user-bar {
+  margin-top: auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 16px;
+}
+
+#userEmail {
+  color: #4f8cff;
+  font-weight: 500;
+}
+
+#signOutBtn {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: none;
+}
+
+.content-area {
+  padding: 24px;
+  min-height: 500px;
+  overflow-x: auto;
+}
+
+.tab-content {
+  display: none;
+  width: 100%;
+}
+
+/* Calendar Styles */
+.calendar-header {
+  margin-bottom: 24px;
+}
+
+.calendar-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+#weeksSelect {
+  font-size: 1.1rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #cfd8dc;
+  background: white;
+}
+
+#generateMealBtn {
+  font-size: 1.2rem;
+  padding: 12px 24px;
+  background: #4f8cff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(79,140,255,0.2);
+  transition: background 0.2s;
+}
+
+#generateMealBtn:hover {
+  background: #357ae8;
+}
+
+.save-message {
+  display: none;
+  color: #4f8cff;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.calendar-container {
+  width: 100%;
+}
+
+.calendar-week {
+  margin-bottom: 32px;
+}
+
+.week-header {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #4f8cff;
+  margin-bottom: 16px;
+  text-align: center;
+  padding: 8px;
+  background: #f0f4ff;
+  border-radius: 8px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.day-header {
+  background: #4f8cff;
+  color: white;
+  padding: 8px;
+  text-align: center;
+  font-weight: 600;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.calendar-day {
+  background: #f0f4ff;
+  border: 2px solid #e0e7ff;
+  border-radius: 8px;
+  padding: 12px;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s;
+}
+
+.calendar-day:hover {
+  border-color: #4f8cff;
+  box-shadow: 0 2px 8px rgba(79,140,255,0.1);
+}
+
+.day-number {
+  font-weight: 600;
+  color: #4f8cff;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.meal-content {
+  flex: 1;
+  font-size: 0.85rem;
+  color: #333;
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+
+.meal-actions {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.pin-btn, .like-btn, .dislike-btn {
+  border: none;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+  min-width: 0;
+}
+
+.pin-btn {
+  background: #e0e7ff;
+  color: #333;
+}
+
+.pin-btn:hover {
+  background: #d1d9ff;
+}
+
+.like-btn {
+  background: #ffe0f0;
+  color: #333;
+}
+
+.like-btn:hover {
+  background: #ffccdd;
+}
+
+.dislike-btn {
+  background: #ffe0e0;
+  color: #333;
+}
+
+.dislike-btn:hover {
+  background: #ffcccc;
+}
+
+.clickable {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clickable:hover {
+  background: rgba(79, 140, 255, 0.1);
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.liked-meal-name {
+  cursor: pointer;
+  color: #4f8cff;
+  text-decoration: underline;
+  flex: 1;
+}
+
+.liked-meal-name:hover {
+  color: #357ae8;
+}
+
+#likedMealsList li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  background: #f0f4ff;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+/* Old styles for backward compatibility */
+.day {
+  margin-bottom: 18px;
+  padding: 12px;
+  background: #f0f4ff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(79,140,255,0.07);
+}
+
+.day h3 {
+  margin: 0 0 6px 0;
+  color: #4f8cff;
+  font-size: 1.1rem;
+}
+
+.day p {
+  margin: 0;
+  color: #333;
+}
+
+#addFoodForm {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+#newFood {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+#addFoodForm button {
+  background: #4f8cff;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+#foodsList li {
+  margin-bottom: 8px;
+  background: #e0e7ff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+}
+
+#foodsList input[type='text'] {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #cfd8dc;
+  font-size: 1rem;
+  background: #fff;
+}
+
+#foodsList button {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-left: 4px;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: auto;
+  background: rgba(0,0,0,0.25);
+}
+
+/* Modal Styling */
+.modal-content {
+  background: #fff;
+  margin: 10% auto;
+  padding: 40px 32px 32px 32px;
+  border-radius: 18px;
+  max-width: 400px;
+  box-shadow: 0 8px 32px rgba(79,140,255,0.13);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.close {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  font-size: 1.7rem;
+  color: #e74c3c;
+  cursor: pointer;
+  font-weight: bold;
+  transition: color 0.2s;
+}
+
+.close:hover {
+  color: #b71c1c;
+}
+
+#loginModal h2 {
+  font-size: 2rem;
+  margin-bottom: 28px;
+  color: #4f8cff;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+#loginModal #signInForm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  align-items: center;
+}
+
+#loginModal input[type="email"],
+#loginModal input[type="password"] {
+  width: 90%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #cfd8dc;
+  font-size: 1.1rem;
+  background: #f7f7fa;
+  margin-bottom: 0;
+}
+
+#loginModal button[type="submit"] {
+  background: #4f8cff;
+  color: #fff;
+  border: none;
+  padding: 12px 0;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  width: 90%;
+  margin-top: 8px;
+  box-shadow: 0 2px 8px rgba(79,140,255,0.07);
+  transition: background 0.2s;
+}
+
+#loginModal button[type="submit"]:hover {
+  background: #357ae8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .calendar-grid {
+    grid-template-columns: repeat(7, minmax(140px, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .calendar-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  
+  .calendar-day {
+    min-height: 100px;
+    padding: 8px;
+  }
+  
+  .day-number {
+    font-size: 0.8rem;
+  }
+  
+  .meal-content {
+    font-size: 0.8rem;
+  }
+  
+  .meal-actions {
+    gap: 2px;
+  }
+  
+  .pin-btn, .like-btn, .dislike-btn {
+    font-size: 0.7rem;
+    padding: 2px 4px;
+  }
+}
+
+@media (max-width: 700px) {
+  .container {
+    max-width: 100vw;
+    min-width: 100vw;
+    border-radius: 0;
+    margin: 0;
+  }
+  
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .sidebar {
+    flex-direction: row;
+    align-items: center;
+    padding: 16px;
+    min-height: unset;
+    border-radius: 0;
+  }
+  
+  .tabs {
+    flex-direction: row;
+    gap: 4px;
+  }
+  
+  .tab-btn {
+    padding: 10px 8px;
+    font-size: 0.95rem;
+  }
+  
+  .content-area {
+    padding: 16px 8px;
+  }
+  
+  .calendar-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .calendar-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  #generateMealBtn {
+    width: 100%;
+  }
+}
