@@ -5,74 +5,189 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Weekly Recipe Planner</title>
   <link rel="stylesheet" href="styles.css">
+  <meta name="description" content="Plan your weekly meals with our intuitive recipe planner">
+
 </head>
+<style>
+  .error-message {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    background-color: #ffdddd;
+    border-bottom: 1px solid #cc0000;
+    color: #cc0000;
+    text-align: center;
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+  }
+</style>
 <body>
   <div class="container">
-    <h1>Weekly Recipe Planner</h1>
-    <div class="main-grid">
-      <div class="sidebar">
-        <div class="tabs">
-          <button class="tab-btn active" id="weeklyPlan-btn">Weekly Plan</button>
-          <button class="tab-btn" id="myFoods-btn">My Foods</button>
-          <button class="tab-btn" id="likedMeals-btn">Liked Meals</button>
-          <button class="tab-btn" id="preferences-btn">Preferences</button>
-        </div>
-        <div class="user-bar">
-          <span id="userEmail"></span>
-          <button id="signOutBtn">Sign Out</button>
-        </div>
-      </div>
+    <header class="main-header">
+      <h1>Weekly Recipe Planner</h1>
+      <nav class="user-nav">
+        <span id="userEmail"></span>
+        <button id="signOutBtn">Sign Out</button>
+      </nav>
+    </header>
+    
+    <main class="main-content">
+      <aside class="sidebar">
+        <nav class="tabs">
+          <button class="tab-btn active" id="weeklyPlan-btn">📅 Weekly Plan</button>
+          <button class="tab-btn" id="myFoods-btn">🍎 My Foods</button>
+          <button class="tab-btn" id="likedMeals-btn">❤️ Liked Meals</button>
+          <button class="tab-btn" id="preferences-btn">⚙️ Preferences</button>
+        </nav>
+      </aside>
+      
       <div class="content-area">
-        <div id="weeklyPlan" class="tab-content" style="display:block;">
-          <div class="calendar-header">
+        <!-- Tab contents will be dynamically loaded here -->
+        <div id="weeklyPlan" class="tab-content active">
+          <section class="calendar-section">
             <div class="calendar-controls">
-              <select id="weeksSelect">
+              <select id="weeksSelect" aria-label="Number of weeks to plan">
                 <option value="1">1 Week</option>
                 <option value="2">2 Weeks</option>
                 <option value="3">3 Weeks</option>
                 <option value="4">4 Weeks</option>
               </select>
-              <button id="generateMealBtn">Generate Meal Plan</button>
+              <button id="generateMealBtn" class="generate-btn">
+                <span class="emoji">🧠</span> AI Generate Meal Plan
+              </button>
             </div>
-            <div id="saveMealMsg" class="save-message">Meal liked!</div>
-          </div>
-          <div id="calendar-container" class="calendar-container">
-            <!-- Calendar will be generated here -->
-          </div>
+            
+            <div id="saveMealMsg" class="save-message" role="alert">
+              Meal liked!
+            </div>
+            
+            <div id="calendar-container" class="calendar-container">
+              <!-- Calendar will be generated here -->
+              <div class="legend">
+                <div class="legend-item">
+                  <span class="legend-icon liked-icon">❤️</span> Liked
+                </div>
+                <div class="legend-item">
+                  <span class="legend-icon disliked-icon">👎</span> Disliked
+                </div>
+                <div class="legend-item">
+                  <span class="legend-icon pinned-icon">📌</span> Pinned
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
+        
         <div id="myFoods" class="tab-content">
-          <h2>My Foods</h2>
-          <form id="addFoodForm">
-            <input type="text" id="newFood" placeholder="Add a food">
-            <button type="submit">Add Food</button>
-          </form>
-          <ul id="foodsList"></ul>
+          <section class="foods-section">
+            <h2>🍎 My Foods</h2>
+            <form id="addFoodForm" class="food-form">
+              <input type="text" id="newFood" placeholder="Add a food" required aria-label="New food item">
+              <button type="submit" class="add-btn">
+                <span class="emoji">+</span> Add Food
+              </button>
+            </form>
+            <ul id="foodsList" class="foods-list"></ul>
+          </section>
         </div>
+        
         <div id="likedMeals" class="tab-content">
-          <h2>Liked Meals</h2>
-          <p>Your favorite meals will appear here. Click the ❤️ button on any meal to like it!</p>
-          <ul id="likedMealsList"></ul>
+          <section class="meals-section">
+            <h2>❤️ Liked Meals</h2>
+            <p>Your favorite meals will appear here. Click the ❤️ button on any meal to like it!</p>
+            <div class="meal-actions">
+              <button id="clearLikedBtn" class="clear-btn">
+                <span class="emoji">🗑️</span> Clear All Liked Meals
+              </button>
+            </div>
+            <ul id="likedMealsList" class="meal-list"></ul>
+          </section>
         </div>
+        
         <div id="preferences" class="tab-content">
-          <h2>Preferences</h2>
-          <p>Coming soon...</p>
+          <section class="preferences-section">
+            <h2>⚙️ Meal Preferences</h2>
+            <div class="preferences-grid">
+              <div class="preference-category">
+                <h3>General Preferences</h3>
+                <div class="preference-item">
+                  <label class="switch">
+                    <input type="checkbox" id="vegetarianPref">
+                    <span class="slider"></span>
+                    <span class="preference-text">
+                      <strong>Include Vegetarian Meals</strong>
+                      <small>Add one completely vegetarian meal per week</small>
+                    </span>
+                  </label>
+                </div>
+                <div class="preference-item">
+                  <label class="switch">
+                    <input type="checkbox" id="easyMealsPref">
+                    <span class="slider"></span>
+                    <span class="preference-text">
+                      <strong>Prefer Easy-to-Make Meals</strong>
+                      <smallIPrioritize simple recipes with fewer ingredients and steps</small>
+                    </span>
+                  </label>
+                </div>
+              </div>
+              
+              <div class="preference-category">
+                <h3>Manage Disliked Meals</h3>
+                <div class="meal-actions">
+                  <button id="clearDislikedBtn" class="clear-btn">
+                    <span class="emoji">🗑️</span> Clear All Disliked Meals
+                  </button>
+                </div>
+                <ul id="dislikedMealsList" class="meal-list"></ul>
+              </div>
+            </div>
+            
+            <div class="preferences-actions">
+              <button id="savePreferencesBtn" class="save-preferences-btn">
+                <span class="emoji">💾</span> Save Preferences
+              </button>
+            </div>
+          </section>
         </div>
       </div>
-    </div>
-    <div id="loginModal" class="modal">
-      <div class="modal-content">
-        <span class="close" id="closeModal">&times;</span>
-        <h2>Sign In</h2>
-        <form id="signInForm">
-          <input type="email" name="email" placeholder="Email" required>
-          <input type="password" name="password" placeholder="Password" required>
-          <button type="submit">Sign In</button>
-        </form>
-      </div>
+    </main>
+  </div>
+  
+  <div id="loginModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-content">
+      <span class="close" id="closeModal" aria-label="Close modal">&times;</span>
+      <h2 id="modal-title">Sign In</h2>
+      <form id="signInForm">
+        <div class="form-group">
+          <label for="emailInput">Email</label>
+          <input type="email" id="emailInput" name="email" placeholder="Email" required>
+        </div>
+        <div class="form-group">
+          <label for="passwordInput">Password</label>
+          <input type="password" id="passwordInput" name="password" placeholder="Password" required>
+        </div>
+        <button type="submit" class="submit-btn">Sign In</button>
+      </form>
     </div>
   </div>
-  <script type="module" src="firebase.js"></script>
-  <script type="module" src="auth.js"></script>
-  <script type="module" src="app.js"></script>
+  
+  <!-- Recipe Details Modal -->
+  <div id="recipeModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <div id="recipeDetailsContainer"></div>
+    </div>
+  </div>
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase.js"></script>
+  <script src="auth.js"></script>
+  <script src="Weekly Recipes/app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

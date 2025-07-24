@@ -1,0 +1,48 @@
+<!-- ... existing code ... -->
+<div id="preferences" class="tab-content">
+  <section class="preferences-section">
+    <h2>⚙️ Meal Preferences</h2>
+    <div class="preferences-grid">
+      <div class="preference-category">
+        <h3>General Preferences</h3>
+        <div class="preference-item">
+          <label class="switch">
+            <input type="checkbox" id="vegetarianPref">
+            <span class="slider"></span>
+            <span class="preference-text">
+              <strong>Include Vegetarian Meals</strong>
+              <small>Add one completely vegetarian meal per week</small>
+            </span>
+          </label>
+        </div>
+        <div class="preference-item">
+          <label class="switch">
+            <input type="checkbox" id="easyMealsPref">
+            <span class="slider"></span>
+            <span class="preference-text">
+              <strong>Prefer Easy-to-Make Meals</strong>
+              <small>Prioritize simple recipes with fewer ingredients and steps</small>
+            </span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="preference-category">
+        <h3>Manage Disliked Meals</h3>
+        <div class="meal-actions">
+          <button id="clearDislikedBtn" class="clear-btn">
+            <span class="emoji">🗑️</span> Clear All Disliked Meals
+          </button>
+        </div>
+        <ul id="dislikedMealsList" class="meal-list"></ul>
+      </div>
+    </div>
+    
+    <div class="preferences-actions">
+      <button id="savePreferencesBtn" class="save-preferences-btn">
+        <span class="emoji">💾</span> Save Preferences
+      </button>
+    </div>
+  </section>
+</div>
+<!-- ... existing code ... -->

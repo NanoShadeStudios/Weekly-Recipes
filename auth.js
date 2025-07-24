@@ -1,38 +1,21 @@
-import { auth } from './firebase.js';
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+// No import needed
 
-export function setupAuth(onUserChanged) {
-  const signInForm = document.getElementById('signInForm');
-  const signOutBtn = document.getElementById('signOutBtn');
-  const userEmail = document.getElementById('userEmail');
+const initAuth = () => {
+  const loginModal = document.getElementById('loginModal');
+  if (loginModal) {
+    loginModal.style.display = 'block';
+  }
 
-  signInForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = signInForm.email.value;
-    const password = signInForm.password.value;
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch (err) {
-      alert('Sign in failed: ' + err.message);
-    }
+  auth.onAuthStateChanged((user) => {
+    // ... existing auth state change handler ...
   });
+};
 
-  signOutBtn.addEventListener('click', async () => {
-    await signOut(auth);
-  });
-
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      userEmail.textContent = user.email;
-      signInForm.style.display = 'none';
-      signOutBtn.style.display = 'inline-block';
-      userEmail.style.display = 'inline-block';
-    } else {
-      userEmail.textContent = '';
-      signInForm.style.display = 'block';
-      signOutBtn.style.display = 'none';
-      userEmail.style.display = 'none';
-    }
-    onUserChanged(user);
-  });
+function setupAuth(callback) {
+  initAuth();
+  if (callback && typeof callback === 'function') {
+    callback();
+  }
 }
+
+window.setupAuth = setupAuth;

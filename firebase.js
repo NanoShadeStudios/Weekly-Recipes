@@ -1,20 +1,16 @@
-// Firebase initialization
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-
+// Initialize Firebase
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAWoplG8Wk8JMRIYEHCjPoqcTRlzVIZAZE",
   authDomain: "mealmap-540a2.firebaseapp.com",
   projectId: "mealmap-540a2",
-  storageBucket: "mealmap-540a2.appspot.com",
+  storageBucket: "mealmap-540a2.firebasestorage.app",
   messagingSenderId: "537782288029",
   appId: "1:537782288029:web:c13a6d09970fe8b45b1e74",
   measurementId: "G-8GRYMPKTS2"
 };
+firebase.initializeApp(firebaseConfig);
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-export { auth, db };
+window.auth = firebase.auth();
+window.db = firebase.firestore();
