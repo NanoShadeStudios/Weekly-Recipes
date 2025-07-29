@@ -172,6 +172,30 @@ export function removeLikedMeal(idx, currentUser, likedMeals, renderLikedMealsCa
 }
 
 /**
+ * Displays an initialization error message to the user
+ * @param {string} message - The error message to display
+ */
+export const showInitializationError = (message = '无法初始化应用。请检查您的网络连接并重试。') => {
+  // Create error element if it doesn't exist
+  let errorDiv = document.getElementById('initialization-error');
+  if (!errorDiv) {
+    errorDiv = document.createElement('div');
+    errorDiv.id = 'initialization-error';
+    errorDiv.className = 'error-message';
+    document.body.appendChild(errorDiv);
+  }
+  
+  // Update and display error message
+  errorDiv.textContent = message;
+  errorDiv.style.opacity = '1';
+  
+  // Auto-hide after 5 seconds
+  setTimeout(() => {
+    errorDiv.style.opacity = '0';
+  }, 5000);
+};
+
+/**
  * Handles liking a recipe
  * @param {Object} recipe - Recipe to like
  */

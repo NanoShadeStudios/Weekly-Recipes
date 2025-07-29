@@ -639,6 +639,7 @@ button, input, select, textarea {
   overflow: auto;
   background-color: rgba(0,0,0,0.4);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px); /* Safari 9+ support */
 }
 
 .modal-content {

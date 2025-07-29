@@ -3,13 +3,13 @@ function savePreferences() {
     vegetarian: document.getElementById('vegetarianPref').checked,
     easyMeals: document.getElementById('easyMealsPref').checked
   };
-  
-  if (currentUser) {
-    updateDoc(doc(db, 'users', currentUser.uid), {
-      preferences: preferences
-    });
+
+  if (window.auth && window.auth.currentUser) {
+    const user = window.auth.currentUser;
+    const userDocRef = window.db.collection('users').doc(user.uid);
+    userDocRef.update({ preferences });
   }
-  
+
   // Show save confirmation
   const saveMsg = document.createElement('div');
   saveMsg.className = 'save-message';
@@ -18,8 +18,4 @@ function savePreferences() {
   setTimeout(() => saveMsg.remove(), 2000);
 }
 
-function loadPreferences(userData) {
-  const preferences = userData.preferences || {};
-  document.getElementById('vegetarianPref').checked = preferences.vegetarian || false;
-  document.getElementById('easyMealsPref').checked = preferences.easyMeals || false;
-}
+window.savePreferences = savePreferences; 

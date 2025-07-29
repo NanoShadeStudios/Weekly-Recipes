@@ -1,7 +1,7 @@
 // Meal templates and generation logic
 
 // Popular meal templates database
-export const popularMealTemplates = [
+const popularMealTemplates = [
   // Classic combinations
   { template: 'Grilled {meat} with {carb} and {veggie}', needsMeat: true, needsCarb: true, needsVeggie: 1, cuisine: 'American' },
   { template: '{meat} Stir Fry with {veggie} and {veggie2}', needsMeat: true, needsCarb: false, needsVeggie: 2, cuisine: 'Asian' },
@@ -63,9 +63,10 @@ export const popularMealTemplates = [
   { template: '{meat} Hash with {veggie} and {carb}', needsMeat: true, needsCarb: true, needsVeggie: 1, cuisine: 'Breakfast' },
   { template: '{meat} Benedict with {veggie}', needsMeat: true, needsCarb: false, needsVeggie: 1, cuisine: 'Breakfast' }
 ];
+window.popularMealTemplates = popularMealTemplates;
 
 // Calculate how many meals should include user foods based on quantity
-export function calculateUserFoodMealCount(userFoodCount, totalMeals) {
+function calculateUserFoodMealCount(userFoodCount, totalMeals) {
   if (userFoodCount === 0) return 0;
   // At least 1 meal, up to 50% of meals should include user foods
   const minMeals = 1;
@@ -73,6 +74,7 @@ export function calculateUserFoodMealCount(userFoodCount, totalMeals) {
   const calculatedMeals = Math.min(Math.max(Math.ceil(userFoodCount / 3), minMeals), maxMeals);
   return calculatedMeals;
 }
+window.calculateUserFoodMealCount = calculateUserFoodMealCount;
 
 // Helper function to safely get a single food item
 function getSingleFood(foodArray) {
@@ -93,7 +95,7 @@ function getSingleFood(foodArray) {
 }
 
 // Generate a meal using either ONLY user foods or ONLY popular foods
-export function generateMealFromSource(template, foodSource, dislikedMeals = [], attempts = 0) {
+function generateMealFromSource(template, foodSource, dislikedMeals = [], attempts = 0) {
   if (attempts > 20) return null;
   
   let meal = template.template;
@@ -214,3 +216,4 @@ export function generateMealFromSource(template, foodSource, dislikedMeals = [],
   
   return meal;
 }
+window.generateMealFromSource = generateMealFromSource;

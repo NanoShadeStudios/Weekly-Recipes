@@ -1,13 +1,12 @@
 import { updatePinnedMealsInDB, updateLikedMealsInDB, updateDislikedMealsInDB } from './dataManager.js';
-import { collection, getDocs, query, where, addDoc, updateDoc, doc, setDoc } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
-import { db } from './firebase.js';
+import { getFirebaseInstance } from './firebase.js';
 
 // Google search functionality
-export function searchRecipe(mealName) {
+export const searchRecipe = (mealName) => {
   const searchQuery = encodeURIComponent(mealName + ' recipe');
   const googleSearchUrl = `https://www.google.com/search?q=${searchQuery}`;
   window.open(googleSearchUrl, '_blank');
-}
+};
 
 // Pin/Unpin meal functionality
 export function togglePinMeal(dayIndex, currentUser, pinnedMeals, updatePinButtonCallback) {
@@ -32,76 +31,118 @@ export function togglePinMeal(dayIndex, currentUser, pinnedMeals, updatePinButto
 }
 
 // Like/unlike meal functionality
-export function likeMeal(dayIndex, currentUser, likedMeals, renderLikedMealsCallback) {
-  const mealText = document.getElementById('mealText' + dayIndex).textContent;
-  const msg = document.getElementById('saveMealMsg');
+export const likeMeal = async (dayIndex, currentUser, likedMeals, renderLikedMealsCallback) => {
+  try {
+    const mealText = getMealText(dayIndex);
+    if (!mealText) return likedMeals;
 
-  // Check if meal is already liked
-  const mealIndex = likedMeals.indexOf(mealText);
-
-  if (mealIndex === -1) {
-    // Add to liked meals
-    likedMeals.push(mealText);
-    msg.textContent = `Meal liked!`;
-  } else {
-    // Remove from liked meals
-    likedMeals.splice(mealIndex, 1);
-    msg.textContent = `Like removed!`;
-  }
-
-  // Save to database
-  updateLikedMealsInDB(currentUser, likedMeals);
-
-  // Show feedback
-  msg.style.display = 'block';
-  setTimeout(() => { msg.style.display = 'none'; }, 2000);
-
-  // Update liked meals display if on that tab
-  renderLikedMealsCallback();
-
-  return likedMeals;
-}
-
-// Dislike/undislike meal functionality
-export function dislikeMeal(dayIndex, currentUser, dislikedMeals, likedMeals, generateSingleMealCallback) {
-  const mealText = document.getElementById('mealText' + dayIndex).textContent;
-  const msg = document.getElementById('saveMealMsg');
-
-  // Check if meal is already disliked
-  const mealIndex = dislikedMeals.indexOf(mealText);
-
-  if (mealIndex === -1) {
-    // Add to disliked meals
-    dislikedMeals.push(mealText);
-    msg.textContent = `Meal disliked!`;
-
-    // Remove from liked meals if present
-    const likedIndex = likedMeals.indexOf(mealText);
-    if (likedIndex > -1) {
-      likedMeals.splice(likedIndex, 1);
-      updateLikedMealsInDB(currentUser, likedMeals);
+    const { db } = await getFirebaseInstance();
+    
+    const mealIndex = likedMeals.indexOf(mealText);
+    let updatedLikedMeals;
+    
+    if (mealIndex === -1) {
+      // Add to liked meals
+      updatedLikedMeals = [...likedMeals, mealText];
+    } else {
+      // Remove from liked meals
+      updatedLikedMeals = [
+        ...likedMeals.slice(0, mealIndex),
+        ...likedMeals.slice(mealIndex + 1)
+      ];
     }
 
-    // Generate a new meal for this day
-    generateSingleMealCallback(dayIndex);
-  } else {
-    // Remove from disliked meals
-    dislikedMeals.splice(mealIndex, 1);
-    msg.textContent = `Dislike removed!`;
+    // Save to database
+    await updateLikedMealsInDB(currentUser, updatedLikedMeals);
+
+    // Show feedback
+    const msg = document.getElementById('saveMealMsg');
+    if (msg) {
+      msg.textContent = mealIndex === -1 ? 'Meal liked!' : 'Like removed!';
+      msg.style.display = 'block';
+      setTimeout(() => { msg.style.display = 'none'; }, 2000);
+    }
+
+    // Update liked meals display if on that tab
+    renderLikedMealsCallback();
+
+    return updatedLikedMeals;
+  } catch (error) {
+    console.error('Error liking meal:', error);
+    // Show error message to user
+    const msg = document.getElementById('saveMealMsg');
+    if (msg) {
+      msg.textContent = 'Error updating meal like status. Please try again.';
+      msg.style.display = 'block';
+      setTimeout(() => { msg.style.display = 'none'; }, 3000);
+    }
+    return likedMeals;
   }
+};
 
-  // Save to database
-  updateDislikedMealsInDB(currentUser, dislikedMeals);
+// Dislike/undislike meal functionality
+export const dislikeMeal = async (dayIndex, currentUser, dislikedMeals, likedMeals, generateSingleMealCallback) => {
+  try {
+    const mealText = getMealText(dayIndex);
+    if (!mealText) return dislikedMeals;
 
-  // Show feedback
-  msg.style.display = 'block';
-  setTimeout(() => { msg.style.display = 'none'; }, 2000);
+    const { db } = await getFirebaseInstance();
+    
+    const mealIndex = dislikedMeals.indexOf(mealText);
+    let updatedDislikedMeals;
+    let updatedLikedMeals = likedMeals;
+    
+    if (mealIndex === -1) {
+      // Add to disliked meals
+      updatedDislikedMeals = [...dislikedMeals, mealText];
+      
+      // Remove from liked meals if present
+      const likedIndex = likedMeals.indexOf(mealText);
+      if (likedIndex > -1) {
+        updatedLikedMeals = [
+          ...likedMeals.slice(0, likedIndex),
+          ...likedMeals.slice(likedIndex + 1)
+        ];
+        await updateLikedMealsInDB(currentUser, updatedLikedMeals);
+      }
 
-  return dislikedMeals;
-}
+      // Generate a new meal for this day
+      generateSingleMealCallback(dayIndex);
+    } else {
+      // Remove from disliked meals
+      updatedDislikedMeals = [
+        ...dislikedMeals.slice(0, mealIndex),
+        ...dislikedMeals.slice(mealIndex + 1)
+      ];
+    }
+
+    // Save to database
+    await updateDislikedMealsInDB(currentUser, updatedDislikedMeals);
+
+    // Show feedback
+    const msg = document.getElementById('saveMealMsg');
+    if (msg) {
+      msg.textContent = mealIndex === -1 ? 'Meal disliked!' : 'Dislike removed!';
+      msg.style.display = 'block';
+      setTimeout(() => { msg.style.display = 'none'; }, 2000);
+    }
+
+    return updatedDislikedMeals;
+  } catch (error) {
+    console.error('Error disliking meal:', error);
+    // Show error message to user
+    const msg = document.getElementById('saveMealMsg');
+    if (msg) {
+      msg.textContent = 'Error updating meal dislike status. Please try again.';
+      msg.style.display = 'block';
+      setTimeout(() => { msg.style.display = 'none'; }, 3000);
+    }
+    return dislikedMeals;
+  }
+};
 
 // Update pin button appearance
-export function updatePinButton(dayIndex, pinnedMeals) {
+export const updatePinButton = (dayIndex, pinnedMeals) => {
   const pinBtn = document.querySelector(`[onclick="togglePinMeal(${dayIndex})"]`);
   const isPinned = pinnedMeals.some(pinned => pinned.dayIndex === dayIndex);
 
@@ -110,15 +151,16 @@ export function updatePinButton(dayIndex, pinnedMeals) {
     pinBtn.style.background = isPinned ? '#ffd700' : '#e0e7ff';
     pinBtn.title = isPinned ? 'Unpin meal' : 'Pin meal';
   }
-}
+};
 
 // Get current plan from the UI
-export function getCurrentPlan() {
+export const getCurrentPlan = () => {
   const plan = [];
   let dayIndex = 0;
   while (document.getElementById('mealText' + dayIndex)) {
-    plan.push(document.getElementById('mealText' + dayIndex).textContent);
+    const mealText = document.getElementById('mealText' + dayIndex).textContent;
+    if (mealText) plan.push(mealText);
     dayIndex++;
   }
   return plan;
-}
+};

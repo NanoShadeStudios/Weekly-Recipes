@@ -6,7 +6,18 @@
   <title>Weekly Recipe Planner</title>
   <link rel="stylesheet" href="styles.css">
   <meta name="description" content="Plan your weekly meals with our intuitive recipe planner">
-
+  <!-- Load Firebase with module type -->
+  <script type="module" src="firebase.js"></script>
+  <!-- Load core modules first -->
+  <script type="module" src="dataManager.js"></script>
+  <!-- Load app modules that depend on core modules -->
+  <script type="module" src="app.js"></script>
+  <script type="module" src="mealActions.js"></script>
+  <!-- Make Firebase available globally for non-module scripts -->
+  <script>
+    window.firebase = undefined;
+    window.getFirebaseInstance = undefined;
+  </script>
 </head>
 <style>
   .error-message {
@@ -37,9 +48,10 @@
       <aside class="sidebar">
         <nav class="tabs">
           <button class="tab-btn active" id="weeklyPlan-btn">📅 Weekly Plan</button>
-          <button class="tab-btn" id="myFoods-btn">🍎 My Foods</button>
+          <button class="tab-btn" id="myFoods-btn">🍎 Favourite Foods</button>
           <button class="tab-btn" id="likedMeals-btn">❤️ Liked Meals</button>
           <button class="tab-btn" id="preferences-btn">⚙️ Preferences</button>
+          <button class="tab-btn" id="profile-btn">👤 Profile</button>
         </nav>
       </aside>
       
@@ -82,7 +94,7 @@
         
         <div id="myFoods" class="tab-content">
           <section class="foods-section">
-            <h2>🍎 My Foods</h2>
+            <h2>🍎 Favourite Foods</h2>
             <form id="addFoodForm" class="food-form">
               <input type="text" id="newFood" placeholder="Add a food" required aria-label="New food item">
               <button type="submit" class="add-btn">
@@ -152,6 +164,16 @@
             </div>
           </section>
         </div>
+
+        <div id="profile" class="tab-content">
+          <section class="profile-section">
+            <h2>👤 Profile</h2>
+            <div id="profileInfo">
+              <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+              <button id="profileSignOutBtn" class="signout-btn">Sign Out</button>
+            </div>
+          </section>
+        </div>
       </div>
     </main>
   </div>
@@ -182,12 +204,11 @@
     </div>
   </div>
   
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="firebase.js"></script>
+  <script type="module" src="firebase.js"></script>
   <script src="auth.js"></script>
-  <script src="Weekly Recipes/app.js"></script>
-  <script src="app.js"></script>
+  <script type="module" src="dataManager.js"></script>
+  <script src="savePreferences.js"></script>
+  <script type="module" src="mealGenerator.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>

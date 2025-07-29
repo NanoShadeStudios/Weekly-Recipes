@@ -1,59 +1,27 @@
-// No import needed; use global auth and db
+// Import Firebase functions using module syntax
+import { getFirebaseInstance } from './firebase.js';
+// Import UI functions
+import { showInitializationError } from './uiManager.js';
+
+// Initialize Firebase when the app starts
+const initializeApp = async () => {
+  try {
+    const { auth, db } = await getFirebaseInstance();
+    // Set up authentication listeners and other initialization logic
+    setupAuthListeners(auth);
+    setupDatabaseListeners(db);
+    // Initialize other components
+    initializeUI();
+  } catch (error) {
+    console.error('Failed to initialize app:', error);
+    showInitializationError();
+  }
+};
+
+// Start the application
+initializeApp();
 
 // Main application file - coordinates all modules
-document.addEventListener('DOMContentLoaded', async () => {
-  // Verify Firebase auth is available before proceeding
-  let firebaseAuthChecked = false;
-
-  const verifyFirebaseAuth = () => {
-    return new Promise((resolve, reject) => {
-      if (window.auth) {
-        firebaseAuthChecked = true;
-        resolve();
-      } else {
-        const checkInterval = setInterval(() => {
-          if (window.auth) {
-            clearInterval(checkInterval);
-            firebaseAuthChecked = true;
-            resolve();
-          }
-        }, 100);
-
-        setTimeout(() => {
-          if (!firebaseAuthChecked) {
-            clearInterval(checkInterval);
-            reject(new Error('Firebase auth verification timed out'));
-          }
-        }, 10000);
-      }
-    });
-  };
-
-  try {
-    await verifyFirebaseAuth();
-
-    // Initialize app with loaded modules
-    window.loadUserData();
-    // Setup UI event listeners
-    document.querySelectorAll('[data-tab]').forEach(tab => {
-      tab.addEventListener('click', () => window.showTab(tab.dataset.tab));
-    });
-
-    // Ensure searchRecipe is available before using it
-    if (typeof window.searchRecipe === 'function') {
-      const searchInput = document.getElementById('searchInput');
-      if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-          window.searchRecipe(e.target.value);
-        });
-      }
-    }
-  } catch (error) {
-    console.error('Application initialization failed:', error);
-    document.getElementById('loading-error')?.removeAttribute('hidden');
-  }
-});
-
 /**
  * Ensures text containers wrap content properly without breaking layout.
  * @param {string} selector - CSS selector of elements to apply wrapping to
@@ -142,3 +110,45 @@ document.addEventListener('DOMContentLoaded', initializeActiveTab);
 // Export functions for external access
 window.loadUserData = window.loadUserData;
 window.renderPlan = renderPlanWrapper;
+
+// Add event listener for Generate Meal button
+document.getElementById('generateMealBtn').addEventListener('click', function() {
+  if (typeof window.generatePlan === 'function') {
+    // Use dummy arguments for now, or fetch from global state if available
+    const user = window.auth ? window.auth.currentUser : null;
+    const foods = window.foodsArr || [];
+    const pinnedMeals = window.pinnedMeals || [];
+    const dislikedMeals = window.dislikedMeals || [];
+    const likedMeals = window.likedMeals || [];
+    window.generatePlan(user, foods, pinnedMeals, dislikedMeals, likedMeals, function(plan) {
+      // Render the plan in the calendar-container
+      if (window.renderPlan) {
+        window.renderPlan(plan, pinnedMeals);
+      } else {
+        // Fallback: simple rendering
+        const container = document.getElementById('calendar-container');
+        container.innerHTML = '<pre>' + JSON.stringify(plan, null, 2) + '</pre>';
+      }
+    });
+  } else {
+    alert('Meal generation is not available.');
+  }
+});
+
+// Profile tab logic
+document.getElementById('profile-btn').addEventListener('click', function() {
+  // Show the profile tab
+  document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+  document.getElementById('profile').classList.add('active');
+  // Set user email
+  if (window.auth && window.auth.currentUser) {
+    document.getElementById('profileEmail').textContent = window.auth.currentUser.email;
+  }
+});
+
+document.getElementById('profileSignOutBtn').addEventListener('click', function() {
+  if (window.auth) {
+    window.auth.signOut();
+    location.reload();
+  }
+});
