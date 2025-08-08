@@ -1,9 +1,6 @@
 // Food management functions
 import { updateFoodsInDB } from './dataManager.js';
-import { collection, getDocs, query, where, addDoc, updateDoc, doc, setDoc } from 'https://unpkg.com/firebase@9.23.0/dist/index.esm.js';
-
-// Use the globally initialized Firebase instance
-const db = window.firebase.firestore();
+import { getFirebaseInstance } from './firebase.js';
 
 // Food editing state
 let editingFood = null;

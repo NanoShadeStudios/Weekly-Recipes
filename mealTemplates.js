@@ -217,3 +217,5 @@ function generateMealFromSource(template, foodSource, dislikedMeals = [], attemp
   return meal;
 }
 window.generateMealFromSource = generateMealFromSource;
+
+export { generateMealFromSource, popularMealTemplates, calculateUserFoodMealCount };

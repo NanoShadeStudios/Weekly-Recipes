@@ -1,0 +1,98 @@
+{
+  "name": "weekly-recipes",
+  "version": "1.0.0",
+  "description": "AI-Powered Meal Planning Application with Nutrition Tracking and Seasonal Ingredients",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "python -m http.server 8080",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "jest --config jest.config.js",
+    "test:integration": "jest --config jest.integration.config.js",
+    "test:e2e": "playwright test",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "lint": "eslint *.js --fix",
+    "lint:check": "eslint *.js",
+    "format": "prettier --write *.js *.css *.html *.json *.md",
+    "format:check": "prettier --check *.js *.css *.html *.json *.md",
+    "type-check": "tsc --noEmit",
+    "build": "bash build.sh",
+    "build:windows": "build.bat",
+    "validate": "npm run lint:check && npm run format:check && npm run test",
+    "docs": "jsdoc *.js -d docs/",
+    "serve:build": "cd dist && python -m http.server 8000",
+    "clean": "rm -rf dist/ docs/ coverage/ test-results/ playwright-report/",
+    "deploy:prepare": "npm run validate && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NanoShadeStudios/Weekly-Recipes.git"
+  },
+  "keywords": [
+    "meal-planning",
+    "ai",
+    "nutrition",
+    "recipes",
+    "firebase",
+    "pwa",
+    "javascript",
+    "responsive",
+    "accessibility"
+  ],
+  "author": "Weekly Recipes Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/NanoShadeStudios/Weekly-Recipes/issues"
+  },
+  "homepage": "https://github.com/NanoShadeStudios/Weekly-Recipes#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ],
+  "dependencies": {
+    "firebase": "^10.12.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@types/jest": "^29.5.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.50.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-import": "^2.28.0",
+    "eslint-plugin-jest": "^27.4.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jsdoc": "^4.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.2.0"
+  },
+  "peerDependencies": {},
+  "optionalDependencies": {},
+  "files": [
+    "*.js",
+    "*.css",
+    "*.html",
+    "*.md",
+    "functions/"
+  ],
+  "directories": {
+    "test": "./tests",
+    "doc": "./docs"
+  },
+  "config": {
+    "port": "8000"
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/NanoShadeStudios"
+  }
+}

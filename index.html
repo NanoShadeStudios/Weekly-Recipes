@@ -1,22 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Weekly Recipe Planner</title>
   <link rel="stylesheet" href="styles.css">
-  <meta name="description" content="Plan your weekly meals with our intuitive recipe planner">
+  <meta name="description" content="Plan your weekly meals with our AI-powered recipe planner">
+  <!-- Cache buster for error recovery -->
+  <script src="cacheBuster.js"></script>
+  <!-- Load error handling first -->
   <!-- Load Firebase with module type -->
   <script type="module" src="firebase.js"></script>
-  <!-- Load core modules first -->
+  <!-- Load core modules -->
   <script type="module" src="dataManager.js"></script>
+  <!-- Load authentication (now with better error handling) -->
+  <script type="module" src="auth.js"></script>
+  <!-- Load AI services -->
+  <script type="module" src="aiService.js"></script>
+  <!-- Load nutrition tracker -->
+  <script type="module" src="nutritionTracker.js"></script>
+  <script type="module" src="mealLearningSystem.js"></script>
+  <script type="module" src="mealRatingUI.js"></script>
+  <script type="module" src="ratingsDashboard.js"></script>
+  <script type="module" src="voiceCommandProcessor.js"></script>
+  <script type="module" src="voiceControlManager.js"></script>
+  <script type="module" src="voiceSettingsManager.js"></script>
+  <!-- Performance optimization modules -->
+  <script type="module" src="advancedImageOptimizer.js"></script>
+  <script type="module" src="progressiveLoadingManager.js"></script>
+  <script type="module" src="simplifiedFirebaseOptimizer.js"></script>
+
+  <!-- Load error handling -->
+  <script type="module" src="errorBoundary.js"></script>
   <!-- Load app modules that depend on core modules -->
+  <script type="module" src="calendarIntegration.js"></script>
+  <script type="module" src="calendarUI.js"></script>
+  <script type="module" src="nlpService.js"></script>
+  <script type="module" src="conversationalAI.js"></script>
   <script type="module" src="app.js"></script>
   <script type="module" src="mealActions.js"></script>
   <!-- Make Firebase available globally for non-module scripts -->
   <script>
     window.firebase = undefined;
     window.getFirebaseInstance = undefined;
+    
+    // Debug: Track page loads
+    console.log('Page loaded at:', new Date().toISOString());
+    window.pageLoadTime = Date.now();
+    
+    // Global function to handle generate button click
+    function handleGenerateClick() {
+      console.log('Generate button clicked via inline handler');
+      if (window.generatePlanWrapper) {
+        console.log('Calling generatePlanWrapper...');
+        window.generatePlanWrapper();
+      } else {
+        console.error('generatePlanWrapper not available on window object');
+        console.log('Available functions on window:', Object.keys(window).filter(key => typeof window[key] === 'function'));
+      }
+    }
+    
+    // Prevent any accidental form submissions
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM ready at:', new Date().toISOString());
+      
+      // Additional form submission prevention
+      const forms = document.querySelectorAll('form');
+      forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+          console.log('Form submission intercepted for form:', form.id);
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }, true); // Use capture phase
+      });
+    });
   </script>
 </head>
 <style>
@@ -36,143 +94,1114 @@
 </style>
 <body>
   <div class="container">
-    <header class="main-header">
-      <h1>Weekly Recipe Planner</h1>
-      <nav class="user-nav">
-        <span id="userEmail"></span>
-        <button id="signOutBtn">Sign Out</button>
+    <header class="app-header" role="banner">
+      <h1>Weekly Recipe Planner <span class="ai-badge">AI Powered</span></h1>
+      <nav class="user-nav" role="navigation" aria-label="User navigation">
+        <div class="ai-status loading" id="aiStatus" role="status" aria-live="polite" aria-label="AI service status">
+          <span class="ai-loading"></span>
+          AI Loading...
+        </div>
+        <button id="themeToggle" class="theme-toggle" title="Toggle dark mode" aria-label="Toggle between light and dark mode">🌙</button>
+        <span id="userEmail" aria-label="Current user email"></span>
+        <button id="signOutBtn" class="btn btn-secondary" aria-label="Sign out of your account">Sign Out</button>
       </nav>
     </header>
     
-    <main class="main-content">
-      <aside class="sidebar">
-        <nav class="tabs">
-          <button class="tab-btn active" id="weeklyPlan-btn">📅 Weekly Plan</button>
-          <button class="tab-btn" id="myFoods-btn">🍎 Favourite Foods</button>
-          <button class="tab-btn" id="likedMeals-btn">❤️ Liked Meals</button>
-          <button class="tab-btn" id="preferences-btn">⚙️ Preferences</button>
-          <button class="tab-btn" id="profile-btn">👤 Profile</button>
+    <main class="main-content" role="main">
+      <aside class="sidebar" role="complementary">
+        <nav class="tabs" role="tablist" aria-label="Main navigation">
+          <button class="tab-btn active" id="weeklyPlan-btn" role="tab" aria-selected="true" aria-controls="weeklyPlan" tabindex="0">📅 Weekly Plan</button>
+          <button class="tab-btn" id="myFoods-btn" role="tab" aria-selected="false" aria-controls="myFoods" tabindex="-1">🍎 Favourite Foods</button>
+          <button class="tab-btn" id="preferences-btn" role="tab" aria-selected="false" aria-controls="preferences" tabindex="-1">🧠 AI Preferences</button>
+          <button class="tab-btn" id="ratings-btn" role="tab" aria-selected="false" aria-controls="ratings" tabindex="-1">⭐ Meal Ratings</button>
+          <button class="tab-btn" id="shoppingList-btn" role="tab" aria-selected="false" aria-controls="shoppingList" tabindex="-1">🛒 Shopping List</button>
+          <button class="tab-btn" id="substitutions-btn" role="tab" aria-selected="false" aria-controls="substitutions" tabindex="-1">🔄 Substitutions</button>
+          <button class="tab-btn" id="nutrition-btn" role="tab" aria-selected="false" aria-controls="nutrition" tabindex="-1">📊 Nutrition</button>
+          <button class="tab-btn" id="seasonal-btn" role="tab" aria-selected="false" aria-controls="seasonal" tabindex="-1">🌱 Seasonal</button>
+          <button class="tab-btn" id="calendar-btn" role="tab" aria-selected="false" aria-controls="calendar" tabindex="-1">🗓️ Calendar</button>
+          <button class="tab-btn" id="community-btn" role="tab" aria-selected="false" aria-controls="community" tabindex="-1">👥 Community</button>
+          <button class="tab-btn" id="family-btn" role="tab" aria-selected="false" aria-controls="family" tabindex="-1">👨‍👩‍👧‍👦 Family</button>
+          <button class="tab-btn" id="profile-btn" role="tab" aria-selected="false" aria-controls="profile" tabindex="-1">👤 Profile</button>
         </nav>
       </aside>
       
       <div class="content-area">
         <!-- Tab contents will be dynamically loaded here -->
-        <div id="weeklyPlan" class="tab-content active">
-          <section class="calendar-section">
-            <div class="calendar-controls">
+        <div id="weeklyPlan" class="tab-content active" role="tabpanel" aria-labelledby="weeklyPlan-btn" tabindex="0">
+          <section class="calendar-section" aria-labelledby="weekly-plan-heading">
+            <h2 id="weekly-plan-heading" class="sr-only">Weekly Meal Plan</h2>
+            
+            <!-- Search functionality -->
+            <div class="search-container" role="search" aria-label="Search meals">
+              <div class="search-input-group">
+                <label for="mealSearch" class="search-label">
+                  <span class="emoji" aria-hidden="true">🔍</span>
+                  Search meals, ingredients, or cuisines
+                </label>
+                <input 
+                  type="search" 
+                  id="mealSearch" 
+                  class="search-input"
+                  placeholder="Search for specific meals, ingredients, or cuisine types..."
+                  aria-describedby="search-description"
+                >
+                <div id="search-description" class="sr-only">Search through your meal history and available recipes</div>
+                <button id="clearSearchBtn" class="btn btn-secondary clear-search-btn" aria-label="Clear search" style="display: none;">
+                  <span class="emoji" aria-hidden="true">✖️</span>
+                </button>
+              </div>
+              <div id="searchResults" class="search-results" role="region" aria-live="polite" aria-label="Search results" style="display: none;">
+                <!-- Search results will appear here -->
+              </div>
+            </div>
+            
+            <div class="calendar-controls" role="toolbar" aria-label="Meal planning controls">
+              <label for="weeksSelect" class="sr-only">Number of weeks to plan</label>
               <select id="weeksSelect" aria-label="Number of weeks to plan">
                 <option value="1">1 Week</option>
                 <option value="2">2 Weeks</option>
                 <option value="3">3 Weeks</option>
                 <option value="4">4 Weeks</option>
               </select>
-              <button id="generateMealBtn" class="generate-btn">
-                <span class="emoji">🧠</span> AI Generate Meal Plan
+              <button id="generateMealBtn" class="btn btn-primary generate-btn" aria-describedby="generate-btn-description" onclick="handleGenerateClick()">
+                <span class="emoji" aria-hidden="true">🧠</span> AI Generate Meal Plan
               </button>
+              <div id="generate-btn-description" class="sr-only">Generate a new meal plan using artificial intelligence based on your preferences</div>
             </div>
             
-            <div id="saveMealMsg" class="save-message" role="alert">
+            <div id="saveMealMsg" class="save-message" role="alert" aria-live="assertive">
               Meal liked!
             </div>
             
-            <div id="calendar-container" class="calendar-container">
+            <div id="calendar-container" class="calendar-container" role="region" aria-label="Weekly meal calendar" aria-live="polite" data-content-type="meals" data-priority="high">
               <!-- Calendar will be generated here -->
-              <div class="legend">
+              <div class="legend" role="group" aria-label="Calendar legend">
                 <div class="legend-item">
-                  <span class="legend-icon liked-icon">❤️</span> Liked
+                  <span class="legend-icon disliked-icon" aria-hidden="true">👎</span> 
+                  <span>Disliked</span>
                 </div>
                 <div class="legend-item">
-                  <span class="legend-icon disliked-icon">👎</span> Disliked
+                  <span class="legend-icon pinned-icon" aria-hidden="true">📌</span> 
+                  <span>Pinned</span>
                 </div>
                 <div class="legend-item">
-                  <span class="legend-icon pinned-icon">📌</span> Pinned
+                  <span class="legend-icon ml-icon" aria-hidden="true">🧠</span> 
+                  <span>ML Enhanced</span>
                 </div>
               </div>
             </div>
           </section>
         </div>
         
-        <div id="myFoods" class="tab-content">
-          <section class="foods-section">
-            <h2>🍎 Favourite Foods</h2>
-            <form id="addFoodForm" class="food-form">
-              <input type="text" id="newFood" placeholder="Add a food" required aria-label="New food item">
-              <button type="submit" class="add-btn">
-                <span class="emoji">+</span> Add Food
+        <div id="myFoods" class="tab-content" role="tabpanel" aria-labelledby="myFoods-btn" tabindex="0">
+          <section class="foods-section" aria-labelledby="foods-heading">
+            <h2 id="foods-heading">🍎 Favourite Foods</h2>
+            <form id="addFoodForm" class="food-form" aria-label="Add new favorite food">
+              <label for="newFood" class="sr-only">New food item</label>
+              <input type="text" id="newFood" placeholder="Add a food" required aria-label="New food item" aria-describedby="add-food-description">
+              <div id="add-food-description" class="sr-only">Enter the name of a food you enjoy to add it to your favorites list</div>
+              <button type="submit" class="btn btn-success add-btn" aria-label="Add food to favorites">
+                <span class="emoji" aria-hidden="true">+</span> Add Food
               </button>
             </form>
-            <ul id="foodsList" class="foods-list"></ul>
+            <ul id="foodsList" class="foods-list" role="list" aria-label="Your favorite foods"></ul>
           </section>
         </div>
         
-        <div id="likedMeals" class="tab-content">
-          <section class="meals-section">
-            <h2>❤️ Liked Meals</h2>
-            <p>Your favorite meals will appear here. Click the ❤️ button on any meal to like it!</p>
-            <div class="meal-actions">
-              <button id="clearLikedBtn" class="clear-btn">
-                <span class="emoji">🗑️</span> Clear All Liked Meals
-              </button>
-            </div>
-            <ul id="likedMealsList" class="meal-list"></ul>
-          </section>
-        </div>
-        
-        <div id="preferences" class="tab-content">
-          <section class="preferences-section">
-            <h2>⚙️ Meal Preferences</h2>
-            <div class="preferences-grid">
-              <div class="preference-category">
-                <h3>General Preferences</h3>
+        <div id="preferences" class="tab-content" role="tabpanel" aria-labelledby="preferences-btn" tabindex="0">
+          <section class="preferences-section" aria-labelledby="preferences-heading">
+            <h2 id="preferences-heading">🧠 AI Preferences</h2>
+            <div class="ai-preferences-container">
+              <div class="preference-category" role="group" aria-labelledby="ai-prefs-heading">
+                <h3 id="ai-prefs-heading">Tell AI About Your Food Preferences</h3>
+                <p class="preference-description">
+                  Describe your food preferences, dietary restrictions, favorite cuisines, cooking styles, 
+                  or anything else that helps the AI understand your taste. The more you share, the better 
+                  your meal recommendations will be!
+                </p>
+                <div class="preference-input-group">
+                  <label for="aiPreferencesText" class="preference-label">Your Preferences:</label>
+                  <textarea 
+                    id="aiPreferencesText" 
+                    class="ai-preferences-textarea"
+                    placeholder="Example: I love Mediterranean and Asian cuisines. I'm vegetarian and prefer spicy food. I like quick meals under 30 minutes and enjoy trying new vegetables. I don't like mushrooms or eggplant..."
+                    rows="6"
+                    aria-describedby="ai-prefs-description"
+                  ></textarea>
+                  <div id="ai-prefs-description" class="sr-only">Detailed description of your food preferences to help the AI generate better meal recommendations</div>
+                </div>
+                <div class="preference-actions" role="group" aria-label="AI preference actions">
+                  <button id="saveAIPreferencesBtn" class="btn btn-ai save-preferences-btn" aria-describedby="save-ai-description">
+                    <span class="emoji" aria-hidden="true">🧠</span> Save AI Preferences
+                  </button>
+                  <div id="save-ai-description" class="sr-only">Save your AI preferences to improve meal recommendations</div>
+                  <button id="clearAIPreferencesBtn" class="btn btn-error clear-preferences-btn" aria-label="Clear all AI preferences">
+                    <span class="emoji" aria-hidden="true">🗑️</span> Clear
+                  </button>
+                </div>
+              </div>
+              
+              <div class="preference-category" role="group" aria-labelledby="quick-settings-heading">
+                <h3 id="quick-settings-heading">Quick Settings</h3>
                 <div class="preference-item">
                   <label class="switch">
-                    <input type="checkbox" id="vegetarianPref">
-                    <span class="slider"></span>
+                    <input type="checkbox" id="vegetarianPref" aria-describedby="vegetarian-description">
+                    <span class="slider" aria-hidden="true"></span>
                     <span class="preference-text">
-                      <strong>Include Vegetarian Meals</strong>
-                      <small>Add one completely vegetarian meal per week</small>
+                      <strong>Vegetarian Mode</strong>
+                      <small id="vegetarian-description">Only suggest vegetarian meals</small>
                     </span>
                   </label>
                 </div>
                 <div class="preference-item">
                   <label class="switch">
-                    <input type="checkbox" id="easyMealsPref">
-                    <span class="slider"></span>
+                    <input type="checkbox" id="easyMealsPref" aria-describedby="easy-meals-description">
+                    <span class="slider" aria-hidden="true"></span>
                     <span class="preference-text">
-                      <strong>Prefer Easy-to-Make Meals</strong>
-                      <smallIPrioritize simple recipes with fewer ingredients and steps</small>
+                      <strong>Quick Meals</strong>
+                      <small id="easy-meals-description">Prefer meals under 30 minutes</small>
                     </span>
                   </label>
                 </div>
               </div>
               
-              <div class="preference-category">
-                <h3>Manage Disliked Meals</h3>
-                <div class="meal-actions">
-                  <button id="clearDislikedBtn" class="clear-btn">
-                    <span class="emoji">🗑️</span> Clear All Disliked Meals
+              <div class="preference-category" role="group" aria-labelledby="disliked-meals-heading">
+                <h3 id="disliked-meals-heading">Manage Disliked Meals</h3>
+                <div class="meal-actions" role="group" aria-label="Meal management actions">
+                  <button id="clearDislikedBtn" class="btn btn-error clear-btn" aria-describedby="clear-disliked-description">
+                    <span class="emoji" aria-hidden="true">🗑️</span> Clear All Disliked Meals
                   </button>
+                  <div id="clear-disliked-description" class="sr-only">Remove all meals from your disliked list</div>
                 </div>
-                <ul id="dislikedMealsList" class="meal-list"></ul>
+                <ul id="dislikedMealsList" class="meal-list" role="list" aria-label="List of disliked meals" aria-describedby="disliked-meals-info">
+                </ul>
+                <div id="disliked-meals-info" class="sr-only">Your disliked meals will not appear in future meal recommendations</div>
               </div>
-            </div>
-            
-            <div class="preferences-actions">
-              <button id="savePreferencesBtn" class="save-preferences-btn">
-                <span class="emoji">💾</span> Save Preferences
-              </button>
             </div>
           </section>
         </div>
 
-        <div id="profile" class="tab-content">
-          <section class="profile-section">
-            <h2>👤 Profile</h2>
-            <div id="profileInfo">
-              <p><strong>Email:</strong> <span id="profileEmail"></span></p>
-              <button id="profileSignOutBtn" class="signout-btn">Sign Out</button>
+        <!-- Meal Ratings Tab -->
+        <div id="ratings" class="tab-content" role="tabpanel" aria-labelledby="ratings-btn" tabindex="0">
+          <section class="ratings-section" aria-labelledby="ratings-heading">
+            <h2 id="ratings-heading">⭐ Meal Rating Dashboard</h2>
+            <p class="ratings-description">Track your meal preferences and help the AI learn your taste!</p>
+            
+            <div class="ratings-dashboard">
+              <!-- Learning System Stats -->
+              <div class="learning-stats-card">
+                <h3>🧠 Learning Progress</h3>
+                <div class="stats-grid">
+                  <div class="stat-item">
+                    <span class="stat-number" id="totalRatingsCount">0</span>
+                    <span class="stat-label">Total Ratings</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-number" id="learningAccuracy">0%</span>
+                    <span class="stat-label">AI Accuracy</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-number" id="averageRating">0.0</span>
+                    <span class="stat-label">Avg Rating</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-number" id="preferenceConfidence">0%</span>
+                    <span class="stat-label">Confidence</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Rating Distribution -->
+              <div class="rating-distribution-card">
+                <h3>📊 Rating Distribution</h3>
+                <div class="rating-bars">
+                  <div class="rating-bar" data-rating="5">
+                    <span class="rating-label">5⭐ Love</span>
+                    <div class="bar-container">
+                      <div class="bar-fill" id="rating-5-bar" style="width: 0%"></div>
+                      <span class="bar-count" id="rating-5-count">0</span>
+                    </div>
+                  </div>
+                  <div class="rating-bar" data-rating="4">
+                    <span class="rating-label">4⭐ Like</span>
+                    <div class="bar-container">
+                      <div class="bar-fill" id="rating-4-bar" style="width: 0%"></div>
+                      <span class="bar-count" id="rating-4-count">0</span>
+                    </div>
+                  </div>
+                  <div class="rating-bar" data-rating="3">
+                    <span class="rating-label">3⭐ OK</span>
+                    <div class="bar-container">
+                      <div class="bar-fill" id="rating-3-bar" style="width: 0%"></div>
+                      <span class="bar-count" id="rating-3-count">0</span>
+                    </div>
+                  </div>
+                  <div class="rating-bar" data-rating="2">
+                    <span class="rating-label">2⭐ Dislike</span>
+                    <div class="bar-container">
+                      <div class="bar-fill" id="rating-2-bar" style="width: 0%"></div>
+                      <span class="bar-count" id="rating-2-count">0</span>
+                    </div>
+                  </div>
+                  <div class="rating-bar" data-rating="1">
+                    <span class="rating-label">1⭐ Hate</span>
+                    <div class="bar-container">
+                      <div class="bar-fill" id="rating-1-bar" style="width: 0%"></div>
+                      <span class="bar-count" id="rating-1-count">0</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recent Ratings -->
+              <div class="recent-ratings-card">
+                <h3>🕒 Recent Ratings</h3>
+                <div id="recentRatingsList" class="recent-ratings-list">
+                  <p class="no-ratings-message">No ratings yet! Start rating meals to see your preferences here.</p>
+                </div>
+              </div>
+
+              <!-- Top Preferences -->
+              <div class="preferences-insights-card">
+                <h3>🎯 Your Preferences</h3>
+                <div class="preferences-grid">
+                  <div class="preference-category">
+                    <h4>Favorite Cuisines</h4>
+                    <div id="topCuisines" class="preference-tags">
+                      <span class="preference-tag">Not enough data yet</span>
+                    </div>
+                  </div>
+                  <div class="preference-category">
+                    <h4>Favorite Ingredients</h4>
+                    <div id="topIngredients" class="preference-tags">
+                      <span class="preference-tag">Rate more meals to see patterns</span>
+                    </div>
+                  </div>
+                  <div class="preference-category">
+                    <h4>Cooking Methods</h4>
+                    <div id="topCookingMethods" class="preference-tags">
+                      <span class="preference-tag">Keep rating to discover preferences</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Rating Actions -->
+              <div class="rating-actions-card">
+                <h3>🎮 Quick Actions</h3>
+                <div class="action-buttons">
+                  <button id="testPredictionBtn" class="action-btn primary">
+                    🔮 Test AI Prediction
+                  </button>
+                  <button id="exportRatingsBtn" class="action-btn secondary">
+                    📊 Export Ratings
+                  </button>
+                  <button id="resetRatingsBtn" class="action-btn danger">
+                    🗑️ Reset All Ratings
+                  </button>
+                </div>
+                
+                <!-- Quick Rating Demo -->
+                <div class="quick-rating-demo">
+                  <h4>Rate a Sample Meal:</h4>
+                  <div class="demo-meal-card">
+                    <span class="demo-meal-name" id="demoMealName">Click "Test AI Prediction" to see a suggestion!</span>
+                    <div class="demo-rating-interface" id="demoRatingInterface" style="display: none;">
+                      <!-- Rating interface will be added dynamically -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rating Tutorial -->
+            <div class="rating-tutorial">
+              <h3>📚 How Rating Works</h3>
+              <div class="tutorial-steps">
+                <div class="tutorial-step">
+                  <span class="step-number">1</span>
+                  <div class="step-content">
+                    <h4>Generate Meals</h4>
+                    <p>Create meal plans in the Weekly Plan tab</p>
+                  </div>
+                </div>
+                <div class="tutorial-step">
+                  <span class="step-number">2</span>
+                  <div class="step-content">
+                    <h4>Rate Your Experience</h4>
+                    <p>Use ⭐⭐⭐⭐⭐ stars or 👍👎 buttons to rate meals</p>
+                  </div>
+                </div>
+                <div class="tutorial-step">
+                  <span class="step-number">3</span>
+                  <div class="step-content">
+                    <h4>AI Learns & Improves</h4>
+                    <p>The more you rate, the better meal suggestions become!</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
+        </div>
+
+        <!-- Shopping List Tab -->
+        <div id="shoppingList" class="tab-content" role="tabpanel" aria-labelledby="shoppingList-btn" tabindex="0">
+          <section class="shopping-list-section" aria-labelledby="shopping-list-heading">
+            <h2 id="shopping-list-heading">🛒 Smart Shopping List</h2>
+            <p>Generate organized shopping lists from your meal plans</p>
+
+            <div class="shopping-list-controls">
+              <div class="list-generation-section">
+                <h3>Generate New List</h3>
+                <div class="generation-options">
+                  <div class="option-group">
+                    <label for="servingSize">Serving Size:</label>
+                    <select id="servingSize">
+                      <option value="1-2 people">1-2 people</option>
+                      <option value="3-4 people" selected>3-4 people</option>
+                      <option value="5-6 people">5-6 people</option>
+                      <option value="7+ people">7+ people</option>
+                    </select>
+                  </div>
+                  
+                  <div class="option-group">
+                    <label>
+                      <input type="checkbox" id="includePantryItems">
+                      Include pantry items (salt, oil, etc.)
+                    </label>
+                  </div>
+                  
+                  <div class="option-group">
+                    <label>
+                      <input type="checkbox" id="excludeOwnedItems" checked>
+                      Exclude items I already have
+                    </label>
+                  </div>
+                  
+                  <div class="option-group">
+                    <label>
+                      <input type="checkbox" id="smartConsolidation" checked>
+                      Smart ingredient consolidation
+                    </label>
+                  </div>
+                </div>
+                
+                <button id="generateShoppingListBtn" class="btn btn-primary">
+                  📝 Generate Shopping List
+                </button>
+                <button id="generateSmartListBtn" class="btn btn-primary smart-list-btn">
+                  🧠 Generate Smart List
+                </button>
+              </div>
+
+              <!-- Smart Shopping Container -->
+              <div id="smartShoppingContainer" class="smart-shopping-container" style="display: none;"></div>
+
+              <div class="owned-items-section">
+                <h3>Items I Already Have</h3>
+                <div class="owned-items-input">
+                  <input type="text" id="ownedItemInput" placeholder="Add item you already have...">
+                  <button id="addOwnedItemBtn" class="btn btn-secondary">Add</button>
+                </div>
+                <div id="ownedItemsList" class="owned-items-list"></div>
+              </div>
+            </div>
+
+            <div class="shopping-list-display" id="shoppingListDisplay" style="display: none;">
+              <div class="list-header">
+                <div class="list-info">
+                  <h3 id="listTitle">Your Shopping List</h3>
+                  <div class="list-meta">
+                    <span id="totalItems" class="meta-item"></span>
+                    <span id="estimatedCost" class="meta-item"></span>
+                    <span id="generatedDate" class="meta-item"></span>
+                  </div>
+                </div>
+                
+                <div class="list-actions">
+                  <button id="printListBtn" class="btn btn-secondary">🖨️ Print</button>
+                  <button id="shareListBtn" class="btn btn-secondary">📤 Share</button>
+                  <button id="saveListBtn" class="btn btn-primary">💾 Save</button>
+                </div>
+              </div>
+
+              <div class="shopping-tips" id="shoppingTips"></div>
+
+              <div class="shopping-categories" id="shoppingCategories"></div>
+            </div>
+
+            <div class="shopping-history-section">
+              <h3>Recent Shopping Lists</h3>
+              <div id="shoppingHistory" class="shopping-history"></div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Ingredient Substitution Tab -->
+        <div id="substitutions" class="tab-content" role="tabpanel" aria-labelledby="substitutions-btn" tabindex="0">
+          <section class="substitutions-section" aria-labelledby="substitutions-heading">
+            <h2 id="substitutions-heading">🔄 Ingredient Substitutions</h2>
+            <p>Find smart alternatives for ingredients based on your dietary needs, allergies, and what's available</p>
+
+            <!-- Quick Access Cards -->
+            <div class="substitution-quick-access">
+              <div class="quick-card pantry-card">
+                <div class="card-icon">🥫</div>
+                <h3>My Pantry</h3>
+                <p>Manage what ingredients you have at home</p>
+                <button class="btn btn-primary pantry-manager-btn">
+                  📦 Manage Pantry
+                </button>
+              </div>
+              
+              <div class="quick-card preferences-card">
+                <div class="card-icon">🥗</div>
+                <h3>Dietary Preferences</h3>
+                <p>Set your dietary restrictions and food allergies</p>
+                <button class="btn btn-primary substitution-preferences-btn">
+                  ⚙️ Set Preferences
+                </button>
+              </div>
+              
+              <div class="quick-card search-card">
+                <div class="card-icon">🔍</div>
+                <h3>Find Substitutes</h3>
+                <p>Search for alternatives to specific ingredients</p>
+                <div class="ingredient-search">
+                  <input type="text" id="ingredientSearchInput" placeholder="Enter ingredient name..." class="form-input">
+                  <button id="findSubstitutesBtn" class="btn btn-primary">🔄 Find Alternatives</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Current Meal Plans Integration -->
+            <div class="meal-plans-integration">
+              <h3>📋 Current Meal Plans</h3>
+              <p>Click "Find Substitutes" on any meal card in your weekly plan to explore ingredient alternatives</p>
+              <div class="integration-info">
+                <div class="info-item">
+                  <span class="emoji">✅</span>
+                  <span>Substitutions respect your dietary restrictions</span>
+                </div>
+                <div class="info-item">
+                  <span class="emoji">🏠</span>
+                  <span>Prioritizes ingredients you already have</span>
+                </div>
+                <div class="info-item">
+                  <span class="emoji">🌱</span>
+                  <span>Suggests seasonal alternatives when available</span>
+                </div>
+                <div class="info-item">
+                  <span class="emoji">💰</span>
+                  <span>Considers cost-effective options</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Substitution Results Area -->
+            <div id="substitutionResults" class="substitution-results" style="display: none;">
+              <h3>Substitution Suggestions</h3>
+              <div id="substitutionsList" class="substitutions-list"></div>
+            </div>
+
+            <!-- Common Substitutions Reference -->
+            <div class="common-substitutions">
+              <h3>📚 Quick Reference</h3>
+              <div class="substitution-categories">
+                <div class="category-card">
+                  <h4>🥛 Dairy Alternatives</h4>
+                  <div class="substitution-examples">
+                    <span class="substitution-pair">Milk → Oat milk, Almond milk</span>
+                    <span class="substitution-pair">Butter → Coconut oil, Vegan butter</span>
+                    <span class="substitution-pair">Cheese → Nutritional yeast, Cashew cheese</span>
+                  </div>
+                </div>
+                
+                <div class="category-card">
+                  <h4>🥚 Egg Alternatives</h4>
+                  <div class="substitution-examples">
+                    <span class="substitution-pair">1 Egg → ¼ cup applesauce</span>
+                    <span class="substitution-pair">1 Egg → 1 tbsp ground flaxseed + 3 tbsp water</span>
+                    <span class="substitution-pair">1 Egg → ¼ cup mashed banana</span>
+                  </div>
+                </div>
+                
+                <div class="category-card">
+                  <h4>🌾 Gluten-Free Options</h4>
+                  <div class="substitution-examples">
+                    <span class="substitution-pair">Wheat flour → Almond flour, Rice flour</span>
+                    <span class="substitution-pair">Bread crumbs → Crushed rice cakes</span>
+                    <span class="substitution-pair">Soy sauce → Tamari, Coconut aminos</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Nutrition Tab -->
+        <div id="nutrition" class="tab-content" role="tabpanel" aria-labelledby="nutrition-btn" tabindex="0">
+          <section class="nutrition-section" aria-labelledby="nutrition-heading">
+            <h2 id="nutrition-heading">📊 Nutrition Analysis</h2>
+            <p>Track and analyze the nutritional content of your meal plans</p>
+
+            <!-- Nutrition Goal Selection -->
+            <div class="nutrition-goal-section">
+              <h3>🎯 Nutrition Goals</h3>
+              <div class="goal-selection">
+                <label for="nutritionGoalSelect">Choose your nutrition goal:</label>
+                <select id="nutritionGoalSelect" class="form-select">
+                  <option value="default">General Health (2000 cal)</option>
+                  <option value="weight-loss">Weight Loss (1500 cal)</option>
+                  <option value="muscle-gain">Muscle Gain (2500 cal)</option>
+                  <option value="heart-healthy">Heart Healthy</option>
+                  <option value="diabetic-friendly">Diabetic Friendly</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Nutrition Analysis Controls -->
+            <div class="nutrition-controls">
+              <h3>🔬 Analysis Tools</h3>
+              <div class="control-buttons">
+                <button id="analyzeNutritionBtn" class="btn btn-primary">
+                  📊 Analyze Current Plan
+                </button>
+                <button id="viewNutritionHistoryBtn" class="btn btn-secondary">
+                  📋 View History
+                </button>
+                <button id="showNutritionInsightsBtn" class="btn btn-secondary">
+                  💡 Show Insights
+                </button>
+              </div>
+            </div>
+
+            <!-- Nutrition Dashboard -->
+            <div class="nutrition-dashboard">
+              <h3>📈 Quick Overview</h3>
+              <div id="nutritionDashboard" class="dashboard-content">
+                <p>📝 Analyze a meal plan to see your nutrition dashboard here!</p>
+              </div>
+            </div>
+
+            <!-- Nutrition Results -->
+            <div class="nutrition-results-section">
+              <h3>📊 Analysis Results</h3>
+              <div id="nutritionResults" class="results-content">
+                <div class="placeholder-content">
+                  <div class="placeholder-icon">🔬</div>
+                  <h4>Ready to Analyze!</h4>
+                  <p>Generate a meal plan first, then click "Analyze Current Plan" to see comprehensive nutrition analysis including:</p>
+                  <ul>
+                    <li>📊 Overall nutrition score</li>
+                    <li>📈 Daily averages vs. goals</li>
+                    <li>💡 Personalized recommendations</li>
+                    <li>📅 Day-by-day breakdown</li>
+                    <li>🌟 Insights and trends</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nutrition Education -->
+            <div class="nutrition-education">
+              <h3>📚 Nutrition Tips</h3>
+              <div class="education-grid">
+                <div class="tip-card">
+                  <h4>🥩 Protein</h4>
+                  <p>Aim for 0.8-1g per kg of body weight. Essential for muscle maintenance and feeling full.</p>
+                </div>
+                <div class="tip-card">
+                  <h4>🌾 Fiber</h4>
+                  <p>Target 25-35g daily. Helps with digestion and heart health. Found in fruits, vegetables, and whole grains.</p>
+                </div>
+                <div class="tip-card">
+                  <h4>🧂 Sodium</h4>
+                  <p>Keep under 2300mg daily. Use herbs and spices instead of salt for flavor.</p>
+                </div>
+                <div class="tip-card">
+                  <h4>🥑 Healthy Fats</h4>
+                  <p>20-35% of calories from fats. Choose nuts, olive oil, avocados, and fatty fish.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div id="seasonal" class="tab-content" role="tabpanel" aria-labelledby="seasonal-btn" tabindex="0">
+          <section class="seasonal-section" aria-labelledby="seasonal-main-heading">
+            <h2 id="seasonal-main-heading">🌱 Seasonal Ingredients</h2>
+            
+            <!-- Current Season Overview -->
+            <div class="season-overview">
+              <div class="season-header">
+                <h3 id="currentSeasonTitle">🌿 Loading season...</h3>
+                <p id="currentSeasonDescription">Discovering what's fresh and in season...</p>
+              </div>
+              <div class="season-benefits">
+                <div id="seasonalNutritionHighlight" class="nutrition-highlight">
+                  <h4>📊 Seasonal Nutrition Focus</h4>
+                  <p id="nutritionFocusText">Loading nutrition benefits...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Seasonal Categories -->
+            <div class="seasonal-categories">
+              <div class="category-filters">
+                <h3>🔍 Filter by Category</h3>
+                <div class="filter-buttons">
+                  <button id="showAllBtn" class="btn btn-primary filter-btn active" data-category="all">All Items</button>
+                  <button id="showVegetablesBtn" class="btn btn-secondary filter-btn" data-category="vegetables">🥕 Vegetables</button>
+                  <button id="showFruitsBtn" class="btn btn-secondary filter-btn" data-category="fruits">🍎 Fruits</button>
+                  <button id="showHerbsBtn" class="btn btn-secondary filter-btn" data-category="herbs">🌿 Herbs</button>
+                </div>
+                <div class="filter-options">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="peakOnlyFilter"> Only show peak season items
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Seasonal Ingredients Grid -->
+            <div class="seasonal-grid">
+              <div id="seasonalVegetables" class="seasonal-category">
+                <h3>🥕 Seasonal Vegetables</h3>
+                <div id="vegetablesGrid" class="ingredients-grid">
+                  <div class="loading-placeholder">Loading seasonal vegetables...</div>
+                </div>
+              </div>
+
+              <div id="seasonalFruits" class="seasonal-category">
+                <h3>🍎 Seasonal Fruits</h3>
+                <div id="fruitsGrid" class="ingredients-grid">
+                  <div class="loading-placeholder">Loading seasonal fruits...</div>
+                </div>
+              </div>
+
+              <div id="seasonalHerbs" class="seasonal-category">
+                <h3>🌿 Seasonal Herbs</h3>
+                <div id="herbsGrid" class="ingredients-grid">
+                  <div class="loading-placeholder">Loading seasonal herbs...</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Seasonal Tips -->
+            <div class="seasonal-tips">
+              <h3>💡 Seasonal Cooking Tips</h3>
+              <div id="seasonalTipsList" class="tips-list">
+                <div class="loading-placeholder">Loading seasonal tips...</div>
+              </div>
+            </div>
+
+            <!-- Meal Plan Enhancement -->
+            <div class="meal-plan-enhancement">
+              <h3>🔄 Enhance Your Meal Plan</h3>
+              <div class="enhancement-controls">
+                <p>Get suggestions to incorporate seasonal ingredients into your current meal plan!</p>
+                <button id="enhanceMealPlanBtn" class="btn btn-primary">
+                  ✨ Get Seasonal Suggestions
+                </button>
+              </div>
+              <div id="mealPlanEnhancements" class="enhancements-results">
+                <!-- Enhancement suggestions will be populated here -->
+              </div>
+            </div>
+
+            <!-- Seasonal Preferences -->
+            <div class="seasonal-preferences">
+              <h3>⚙️ Seasonal Preferences</h3>
+              <div class="preferences-form">
+                <div class="preference-group">
+                  <label for="regionSelect">📍 Your Region:</label>
+                  <select id="regionSelect" class="form-select">
+                    <option value="northern">Northern Climate</option>
+                    <option value="southern">Southern Climate</option>
+                    <option value="tropical">Tropical Climate</option>
+                    <option value="mediterranean">Mediterranean Climate</option>
+                  </select>
+                </div>
+                <div class="preference-group">
+                  <label for="nutritionFocusSelect">🎯 Nutrition Focus:</label>
+                  <select id="nutritionFocusSelect" class="form-select">
+                    <option value="">No specific focus</option>
+                    <option value="vitamin C">Vitamin C</option>
+                    <option value="fiber">Fiber</option>
+                    <option value="antioxidants">Antioxidants</option>
+                    <option value="iron">Iron</option>
+                    <option value="vitamin A">Vitamin A</option>
+                  </select>
+                </div>
+                <div class="preference-group">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="autoEnhanceToggle"> Automatically suggest seasonal ingredients
+                  </label>
+                </div>
+                <button id="saveSeasonalPrefsBtn" class="btn btn-primary">💾 Save Preferences</button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div id="profile" class="tab-content" role="tabpanel" aria-labelledby="profile-btn" tabindex="0">
+          <section class="profile-section" aria-labelledby="profile-main-heading">
+            <h2 id="profile-main-heading">👤 My Profile</h2>
+            <div class="profile-container">
+              <div class="profile-card">
+                <header class="profile-header" role="banner">
+                  <div class="profile-avatar" role="img" aria-label="User avatar">
+                    <span class="avatar-emoji" aria-hidden="true">👤</span>
+                  </div>
+                  <div class="profile-info">
+                    <h3 id="profileName">Welcome!</h3>
+                    <p class="profile-email" id="profileEmail" aria-label="User email address"></p>
+                  </div>
+                </header>
+                
+                <section class="profile-stats" aria-labelledby="stats-heading">
+                  <h4 id="stats-heading" class="sr-only">Profile Statistics</h4>
+                  <div class="stat-item" role="group" aria-labelledby="meals-stat">
+                    <span class="stat-number" id="totalMealsGenerated" aria-describedby="meals-stat">0</span>
+                    <span class="stat-label" id="meals-stat">Meals Generated</span>
+                  </div>
+                  <div class="stat-item" role="group" aria-labelledby="foods-stat">
+                    <span class="stat-number" id="favoritefoods" aria-describedby="foods-stat">0</span>
+                    <span class="stat-label" id="foods-stat">Favorite Foods</span>
+                  </div>
+                  <div class="stat-item" role="group" aria-labelledby="ml-stat">
+                    <span class="stat-number" id="mlEnhancedCount" aria-describedby="ml-stat">0</span>
+                    <span class="stat-label" id="ml-stat">ML Enhanced Plans</span>
+                  </div>
+                </section>
+                
+                <div class="profile-actions" role="group" aria-label="Profile actions">
+                  <button id="exportDataBtn" class="profile-action-btn" aria-describedby="export-description">
+                    <span class="emoji" aria-hidden="true">📊</span> Export Data
+                  </button>
+                  <div id="export-description" class="sr-only">Export your meal preferences and history</div>
+                  <button id="resetPreferencesBtn" class="profile-action-btn secondary" aria-describedby="reset-description">
+                    <span class="emoji" aria-hidden="true">🔄</span> Reset Preferences
+                  </button>
+                  <div id="reset-description" class="sr-only">Reset all your food preferences and settings</div>
+                  <button id="profileSignOutBtn" class="profile-action-btn danger" aria-label="Sign out of your account">
+                    <span class="emoji" aria-hidden="true">🚪</span> Sign Out
+                  </button>
+                </div>
+                
+                <section class="profile-settings" aria-labelledby="settings-heading">
+                  <h4 id="settings-heading">App Settings</h4>
+                  <div class="setting-item">
+                    <label class="switch">
+                      <input type="checkbox" id="darkModeToggle" aria-describedby="dark-mode-description">
+                      <span class="slider" aria-hidden="true"></span>
+                      <span class="setting-text">
+                        <strong>Dark Mode</strong>
+                        <small id="dark-mode-description">Toggle dark theme</small>
+                      </span>
+                    </label>
+                  </div>
+                  <div class="setting-item">
+                    <label class="switch">
+                      <input type="checkbox" id="notificationsToggle" checked aria-describedby="notifications-description">
+                      <span class="slider" aria-hidden="true"></span>
+                      <span class="setting-text">
+                        <strong>Notifications</strong>
+                        <small id="notifications-description">Get meal planning reminders</small>
+                      </span>
+                    </label>
+                  </div>
+                </section>
+                
+                <!-- Meal History Section -->
+                <section class="meal-history-section" aria-labelledby="meal-history-heading">
+                  <h4 id="meal-history-heading">📈 Meal History & Analytics</h4>
+                  
+                  <div class="history-controls" role="toolbar" aria-label="Meal history controls">
+                    <button id="viewHistoryBtn" class="history-btn" aria-describedby="view-history-description">
+                      <span class="emoji" aria-hidden="true">📊</span> View History
+                    </button>
+                    <div id="view-history-description" class="sr-only">View your complete meal planning history and analytics</div>
+                    
+                    <button id="clearHistoryBtn" class="history-btn secondary" aria-describedby="clear-history-description">
+                      <span class="emoji" aria-hidden="true">🗑️</span> Clear History
+                    </button>
+                    <div id="clear-history-description" class="sr-only">Clear all meal history data</div>
+                  </div>
+                  
+                  <div id="mealHistoryChart" class="history-chart" role="img" aria-label="Meal history visualization" style="display: none;">
+                    <!-- Chart will be generated here -->
+                  </div>
+                  
+                  <div id="recentMeals" class="recent-meals" role="region" aria-label="Recent meals">
+                    <h5>Recent Meals</h5>
+                    <div id="recentMealsList" class="recent-meals-list">
+                      <!-- Recent meals will be populated here -->
+                    </div>
+                  </div>
+                </section>
+                
+                <!-- Bulk Operations Section -->
+                <section class="bulk-operations-section" aria-labelledby="bulk-ops-heading">
+                  <h4 id="bulk-ops-heading">⚡ Bulk Operations</h4>
+                  
+                  <div class="bulk-controls" role="group" aria-label="Bulk meal operations">
+                    <button id="bulkPinBtn" class="bulk-btn" aria-describedby="bulk-pin-description">
+                      <span class="emoji" aria-hidden="true">📌</span> Bulk Pin Meals
+                    </button>
+                    <div id="bulk-pin-description" class="sr-only">Pin multiple meals to your weekly plan at once</div>
+                    
+                    <button id="bulkUnpinBtn" class="bulk-btn" aria-describedby="bulk-unpin-description">
+                      <span class="emoji" aria-hidden="true">📌</span> Bulk Unpin Meals
+                    </button>
+                    <div id="bulk-unpin-description" class="sr-only">Remove multiple pinned meals from your plan</div>
+                    
+                    <button id="bulkRateBtn" class="bulk-btn" aria-describedby="bulk-rate-description">
+                      <span class="emoji" aria-hidden="true">⭐</span> Bulk Rate Meals
+                    </button>
+                    <div id="bulk-rate-description" class="sr-only">Rate multiple meals to improve AI recommendations</div>
+                  </div>
+                  
+                  <div id="bulkOperationsModal" class="bulk-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="bulk-modal-title">
+                    <div class="bulk-modal-content">
+                      <h5 id="bulk-modal-title">Bulk Operations</h5>
+                      <div id="bulkOperationContent">
+                        <!-- Bulk operation interface will be loaded here -->
+                      </div>
+                      <div class="bulk-modal-actions">
+                        <button id="applyBulkOperation" class="apply-bulk-btn">Apply</button>
+                        <button id="cancelBulkOperation" class="cancel-bulk-btn">Cancel</button>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+                      <span class="slider"></span>
+                      <span class="setting-text">
+                        <strong>Notifications</strong>
+                        <small>Get meal planning reminders</small>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Community Tab -->
+        <div id="community" class="tab-content" role="tabpanel" aria-labelledby="community-btn" tabindex="0">
+          <section class="community-section" aria-labelledby="community-main-heading">
+            <h2 id="community-main-heading">👥 Community Meal Plans</h2>
+            
+            <!-- Community Header with Stats -->
+            <div class="community-header">
+              <div class="community-stats">
+                <div class="stat-card">
+                  <span class="stat-number" id="totalCommunityPlans">0</span>
+                  <span class="stat-label">Shared Plans</span>
+                </div>
+                <div class="stat-card">
+                  <span class="stat-number" id="totalCommunityUsers">0</span>
+                  <span class="stat-label">Active Users</span>
+                </div>
+                <div class="stat-card">
+                  <span class="stat-number" id="averageRating">0.0</span>
+                  <span class="stat-label">Avg Rating</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Community Navigation -->
+            <div class="community-nav">
+              <div class="nav-buttons">
+                <button id="browseBtn" class="nav-btn active" data-view="browse">🌟 Browse Plans</button>
+                <button id="mySharedBtn" class="nav-btn" data-view="my-shared">📤 My Shared</button>
+                <button id="trendingBtn" class="nav-btn" data-view="trending">🔥 Trending</button>
+                <button id="shareNewBtn" class="nav-btn primary" data-view="share">➕ Share Plan</button>
+              </div>
+            </div>
+
+            <!-- Browse Community Plans View -->
+            <div id="browseView" class="community-view active" style="display: block;">
+              <!-- Search and Filters -->
+              <div class="community-search">
+                <div class="search-bar">
+                  <input type="search" id="communitySearch" placeholder="Search meal plans, authors, or ingredients..." aria-label="Search community meal plans">
+                  <button id="communitySearchBtn" class="btn btn-primary">🔍 Search</button>
+                </div>
+                
+                <div class="filter-section">
+                  <div class="filter-group">
+                    <label for="difficultyFilter">Difficulty:</label>
+                    <select id="difficultyFilter">
+                      <option value="">All Levels</option>
+                      <option value="Beginner">Beginner</option>
+                      <option value="Intermediate">Intermediate</option>
+                      <option value="Advanced">Advanced</option>
+                    </select>
+                  </div>
+                  
+                  <div class="filter-group">
+                    <label for="ratingFilter">Min Rating:</label>
+                    <select id="ratingFilter">
+                      <option value="">Any Rating</option>
+                      <option value="4.5">4.5+ Stars</option>
+                      <option value="4.0">4.0+ Stars</option>
+                      <option value="3.5">3.5+ Stars</option>
+                      <option value="3.0">3.0+ Stars</option>
+                    </select>
+                  </div>
+                  
+                  <div class="filter-group">
+                    <label for="sortFilter">Sort by:</label>
+                    <select id="sortFilter">
+                      <option value="featured">Featured</option>
+                      <option value="rating">Highest Rated</option>
+                      <option value="date">Newest</option>
+                      <option value="popular">Most Popular</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="tag-filters">
+                  <span class="filter-label">Quick filters:</span>
+                  <button class="tag-filter" data-tag="mediterranean">Mediterranean</button>
+                  <button class="tag-filter" data-tag="vegetarian">Vegetarian</button>
+                  <button class="tag-filter" data-tag="quick">Quick Meals</button>
+                  <button class="tag-filter" data-tag="healthy">Healthy</button>
+                  <button class="tag-filter" data-tag="family-friendly">Family-Friendly</button>
+                </div>
+              </div>
+
+              <!-- Community Plans Grid -->
+              <div id="communityPlansGrid" class="community-plans-grid">
+                <!-- Plans will be populated here -->
+                <div class="loading-placeholder">
+                  <div style="text-align: center; padding: 40px;">
+                    <div style="font-size: 2em; margin-bottom: 15px;">🔄</div>
+                    <h4>Loading Community Meal Plans...</h4>
+                    <p>Please wait while we load amazing meal plans from the community.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- My Shared Plans View -->
+            <div id="mySharedView" class="community-view">
+              <div class="my-shared-header">
+                <h3>📤 My Shared Meal Plans</h3>
+                <p>Manage the meal plans you've shared with the community</p>
+              </div>
+              
+              <div id="mySharedPlansGrid" class="community-plans-grid">
+                <!-- User's shared plans will be populated here -->
+                <div class="no-plans-message" style="display: none;">
+                  <div class="empty-state">
+                    <span class="empty-icon">📝</span>
+                    <h4>No Shared Plans Yet</h4>
+                    <p>Share your first meal plan with the community!</p>
+                    <button id="shareFirstPlanBtn" class="btn btn-primary">Share a Plan</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Trending Plans View -->
+            <div id="trendingView" class="community-view">
+              <div class="trending-header">
+                <h3>🔥 Trending Meal Plans</h3>
+                <p>Popular meal plans that are getting lots of love from the community</p>
+              </div>
+              
+              <div id="trendingPlansGrid" class="community-plans-grid">
+                <!-- Trending plans will be populated here -->
+                <div class="loading-placeholder">Loading trending meal plans...</div>
+              </div>
+            </div>
+
+            <!-- Share New Plan View -->
+            <div id="shareView" class="community-view">
+              <div class="share-form-container">
+                <h3>➕ Share Your Meal Plan</h3>
+                <p>Share your favorite meal plan with the community and help others discover great meals!</p>
+                
+                <form id="sharePlanForm" class="share-form">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="sharePlanTitle">Plan Title *</label>
+                      <input type="text" id="sharePlanTitle" required placeholder="e.g., Mediterranean Week, Quick Family Meals">
+                    </div>
+                    
+                    <div class="form-group">
+                      <label for="sharePlanDifficulty">Difficulty Level</label>
+                      <select id="sharePlanDifficulty">
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate" selected>Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="sharePlanDescription">Description *</label>
+                    <textarea id="sharePlanDescription" required placeholder="Describe your meal plan, what makes it special, and any tips for others..."></textarea>
+                  </div>
+                  
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="sharePlanPrepTime">Prep Time</label>
+                      <select id="sharePlanPrepTime">
+                        <option value="15-20 minutes">15-20 minutes</option>
+                        <option value="20-30 minutes">20-30 minutes</option>
+                        <option value="30-45 minutes" selected>30-45 minutes</option>
+                        <option value="45-60 minutes">45-60 minutes</option>
+                        <option value="1+ hours">1+ hours</option>
+                      </select>
+                    </div>
+                    
+                    <div class="form-group">
+                      <label for="sharePlanServings">Servings</label>
+                      <select id="sharePlanServings">
+                        <option value="1-2 people">1-2 people</option>
+                        <option value="3-4 people">3-4 people</option>
+                        <option value="4-6 people" selected>4-6 people</option>
+                        <option value="6+ people">6+ people</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="sharePlanTags">Tags (comma-separated)</label>
+                    <input type="text" id="sharePlanTags" placeholder="e.g., vegetarian, quick, healthy, mediterranean">
+                    <small class="form-help">Add tags to help others find your plan</small>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label>Select Meal Plan to Share</label>
+                    <div class="meal-plan-selector">
+                      <button type="button" id="selectCurrentPlanBtn" class="btn btn-secondary">Use Current Week's Plan</button>
+                      <button type="button" id="selectSavedPlanBtn" class="btn btn-secondary">Choose from Saved Plans</button>
+                    </div>
+                    <div id="selectedPlanPreview" class="plan-preview" style="display: none;">
+                      <!-- Preview of selected plan will show here -->
+                    </div>
+                  </div>
+                  
+                  <div class="form-actions">
+                    <button type="button" id="cancelShareBtn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" id="submitShareBtn" class="btn btn-primary">🚀 Share with Community</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+          </section>
+        </div>
+
+        <!-- Calendar Integration Tab -->
+        <div id="calendar" class="tab-content" role="tabpanel" aria-labelledby="calendar-btn" tabindex="0">
+          <!-- Calendar integration content will be generated by CalendarIntegrationUI -->
         </div>
       </div>
     </main>
@@ -182,17 +1211,123 @@
     <div class="modal-content">
       <span class="close" id="closeModal" aria-label="Close modal">&times;</span>
       <h2 id="modal-title">Sign In</h2>
-      <form id="signInForm">
-        <div class="form-group">
-          <label for="emailInput">Email</label>
-          <input type="email" id="emailInput" name="email" placeholder="Email" required>
+                  <form id="signInForm" onsubmit="return false;">
+              <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+              </div>
+              <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+              </div>
+              <button type="button" id="signInBtn" class="btn btn-primary" onclick="handleSignInClick(event)">Sign In</button>
+              <p class="auth-footer">
+                Don't have an account? <a href="#" onclick="toggleAuthMode(event)">Sign up here</a>
+              </p>
+            </form>
         </div>
-        <div class="form-group">
-          <label for="passwordInput">Password</label>
-          <input type="password" id="passwordInput" name="password" placeholder="Password" required>
+        
+        <!-- Family Management Tab -->
+        <div id="family" class="tab-content" role="tabpanel" aria-labelledby="family-btn" tabindex="0">
+          <section class="family-section" aria-labelledby="family-main-heading">
+            <div class="family-container">
+              <div class="family-header">
+                <h2 id="family-main-heading">👨‍👩‍👧‍👦 Family Meal Planning</h2>
+                <div class="family-actions">
+                  <button id="createFamilyBtn" class="btn btn-primary">
+                    <span>➕</span> Create Family
+                  </button>
+                  <button id="joinFamilyBtn" class="btn btn-secondary">
+                    <span>🏠</span> Join Family
+                  </button>
+                  <button id="manageFamilyBtn" class="btn btn-outline" style="display: none;">
+                    <span>⚙️</span> Manage Family
+                  </button>
+                  <button id="leaveFamilyBtn" class="btn btn-danger" style="display: none;">
+                    <span>🚪</span> Leave Family
+                  </button>
+                </div>
+              </div>
+
+              <div class="family-status">
+                <div id="noFamilyStatus" class="status-card no-family">
+                  <div class="status-icon">🏠</div>
+                  <h3>Start Your Family Meal Journey</h3>
+                  <p>Create or join a family to share meal preferences, collaborate on meal planning, and enjoy cooking together!</p>
+                </div>
+
+                <div id="familyDetails" class="family-details" style="display: none;">
+                  <div class="family-info-card">
+                    <div class="family-header-info">
+                      <h3 id="familyName">My Family</h3>
+                      <span class="member-count" id="memberCount">0 members</span>
+                    </div>
+                    <div class="family-description" id="familyDescription">
+                      A loving family sharing delicious meals together.
+                    </div>
+                    <div class="family-invite-code">
+                      <label>Invite Code:</label>
+                      <div class="code-display">
+                        <span id="familyInviteCode">ABC123</span>
+                        <button class="btn-icon" id="copyInviteCode" title="Copy invite code">
+                          📋
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="family-members-section">
+                    <div class="section-header">
+                      <h4>Family Members</h4>
+                      <button id="inviteMemberBtn" class="btn btn-small btn-primary">
+                        <span>➕</span> Invite Member
+                      </button>
+                    </div>
+                    <div id="familyMembersList" class="family-members-list">
+                      <!-- Family members will be populated here -->
+                    </div>
+                  </div>
+
+                  <div class="shared-preferences-section">
+                    <div class="section-header">
+                      <h4>Shared Preferences</h4>
+                      <button id="editSharedPrefsBtn" class="btn btn-small btn-secondary">
+                        <span>✏️</span> Edit
+                      </button>
+                    </div>
+                    <div id="sharedPreferencesDisplay" class="preferences-display">
+                      <!-- Shared preferences will be displayed here -->
+                    </div>
+                  </div>
+
+                  <div class="family-stats-section">
+                    <div class="section-header">
+                      <h4>Family Statistics</h4>
+                    </div>
+                    <div class="stats-grid">
+                      <div class="stat-item">
+                        <span class="stat-number" id="totalFamilyMeals">0</span>
+                        <span class="stat-label">Meals Planned</span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-number" id="sharedRecipes">0</span>
+                        <span class="stat-label">Shared Recipes</span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-number" id="familyRatings">0</span>
+                        <span class="stat-label">Meal Ratings</span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-number" id="collaborativePlans">0</span>
+                        <span class="stat-label">Collaborative Plans</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
-        <button type="submit" class="submit-btn">Sign In</button>
-      </form>
     </div>
   </div>
   
@@ -203,12 +1338,49 @@
       <div id="recipeDetailsContainer"></div>
     </div>
   </div>
+
+  <!-- Loading overlay with accessibility -->
+  <div id="loadingOverlay" class="loading-overlay" role="dialog" aria-live="assertive" aria-label="Loading content" style="display: none;">
+    <div class="loading-content">
+      <div class="loading-spinner" aria-hidden="true"></div>
+      <p class="loading-text">Initializing Weekly Recipes...</p>
+    </div>
+  </div>
+
+  <!-- Toast notifications -->
+  <div id="toastContainer" class="toast-container" role="alert" aria-live="polite"></div>
+  
+  <!-- AI Chat Toggle Button -->
+  <button id="ai-chat-toggle" class="ai-chat-toggle" aria-label="Open AI Assistant" title="Chat with AI Assistant">
+      🤖
+  </button>
   
   <script type="module" src="firebase.js"></script>
-  <script src="auth.js"></script>
+  <script type="module" src="auth.js"></script>
   <script type="module" src="dataManager.js"></script>
-  <script src="savePreferences.js"></script>
+  <script type="module" src="savePreferences.js"></script>
   <script type="module" src="mealGenerator.js"></script>
+  <script type="module" src="seasonalIngredients.js"></script>
+  <script type="module" src="communityManager.js"></script>
+  <script type="module" src="communityUI.js"></script>
+  <script type="module" src="familyManager.js"></script>
+  <script type="module" src="familyUIManager.js"></script>
+  <script type="module" src="mobileEnhancementManager.js"></script>
+  <script type="module" src="ingredientSubstitutionManager.js"></script>
+  <script type="module" src="ingredientSubstitutionUI.js"></script>
+  <script type="module" src="enhancedNutritionTracker.js"></script>
+  <script type="module" src="enhancedNutritionUI.js"></script>
+  <script type="module" src="smartShoppingListManager.js"></script>
+  <script type="module" src="smartShoppingListUI.js"></script>
+  <script type="module" src="calendarIntegration.js"></script>
+  <script type="module" src="calendarUI.js"></script>
+  <script type="module" src="nlpService.js"></script>
+  <script type="module" src="conversationalAI.js"></script>
+  <script type="module" src="themeManager.js"></script>
+  <script type="module" src="aiFeatureManager.js"></script>
+  <script type="module" src="familyManager.js"></script>
+  <script type="module" src="familyUIManager.js"></script>
+  <script type="module" src="appInitializer.js"></script>
   <script type="module" src="app.js"></script>
 </body>
 </html>
