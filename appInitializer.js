@@ -3,7 +3,6 @@
  * Handles the main application initialization and module loading
  */
 
-import { errorBoundary } from './errorBoundary.js';
 
 export class AppInitializer {
     constructor() {
@@ -54,7 +53,6 @@ export class AppInitializer {
         console.log('AppInitializer: Loading critical modules...');
         
         const criticalModules = [
-            { name: 'errorBoundary', path: './errorBoundary.js' },
             { name: 'loadingManager', path: './loadingManager.js' },
             { name: 'uiStateManager', path: './uiStateManager.js' }
         ];
@@ -567,10 +565,6 @@ export class AppInitializer {
      */
     createFallbackModule(moduleName) {
         const fallbacks = {
-            errorBoundary: {
-                handleError: (error, context) => console.error(`[${context}]`, error),
-                wrapAsync: (fn) => fn
-            },
             loadingManager: {
                 showGlobalLoader: () => {},
                 hideGlobalLoader: () => {},

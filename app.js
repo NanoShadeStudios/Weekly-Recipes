@@ -31,7 +31,7 @@ import { savePreferences, preferencesManager } from './savePreferences.js';
 // Import AI services
 import { firebaseAI } from './aiService.js';
 // Import error handling first
-import { errorBoundary, ErrorBoundary } from './errorBoundary.js';
+
 // Import modular components
 import { appInitializer } from './appInitializer.js';
 import { themeManager } from './themeManager.js';
@@ -274,7 +274,6 @@ async function loadAuthManager() {
     return authManager;
   } catch (error) {
     console.error('Failed to load auth manager:', error);
-    errorBoundary.handleError(error, 'module');
     // Create a fallback auth manager
     authManager = {
       initialize: async () => { console.warn('Auth manager fallback - no authentication available'); },
@@ -897,7 +896,6 @@ async function initializeAIFeatures() {
     }
   } catch (error) {
     console.warn('App.js: AI feature setup failed:', error);
-    errorBoundary.handleError(error, 'ai');
     enableBasicFeatures();
     addAIStatusIndicator('offline');
   }
@@ -911,7 +909,7 @@ async function initializeConversationalAI() {
     console.log('Conversational AI initialization complete');
   } catch (error) {
     console.warn('Conversational AI initialization failed:', error);
-    errorBoundary.handleError(error, 'ai');
+
   }
 }
 
@@ -3628,7 +3626,6 @@ async function generatePlanWrapper() {
     tryAutoSyncToCalendar();
   } catch (error) {
     console.error('Meal plan generation failed:', error);
-    errorBoundary.handleError(error, 'meal-generation');
   }
 }
 
@@ -4126,7 +4123,7 @@ async function performSignIn(email, password, form) {
       signInBtn.textContent = 'Sign In';
     }
     
-    errorBoundary.handleError(error, 'auth');
+   
     showAuthError(error.message);
     throw error; // Re-throw so calling function can handle it
   }

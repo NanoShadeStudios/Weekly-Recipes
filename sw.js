@@ -42,7 +42,6 @@ const STATIC_RESOURCES = [
     '/foodData.js',
     '/config.js',
     '/themeManager.js',
-    '/errorBoundary.js',
     '/loadingManager.js',
     '/performanceMonitor.js',
     // Performance optimization modules
